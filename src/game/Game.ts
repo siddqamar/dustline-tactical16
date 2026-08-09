@@ -168,7 +168,6 @@ export class Game {
     this.round.update(deltaSeconds);
     this.player.setEnabled(this.round.isActive);
     this.player.update(deltaSeconds);
-    this.bots.update(deltaSeconds, this.player.position, this.round.isActive);
     this.weapons.update(deltaSeconds);
     if (this.fireHeld && this.player.isPointerLocked && this.round.isActive) {
       const shot = this.weapons.tryFire(this.player.isMoving);
