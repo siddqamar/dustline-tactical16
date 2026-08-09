@@ -4,6 +4,7 @@ import { GameState } from './GameState';
 import { TacticalMap } from '../world/TacticalMap';
 import { PlayerController } from '../player/PlayerController';
 import { WeaponManager } from '../weapons/WeaponManager';
+import { CombatSystem } from '../combat/CombatSystem';
 
 const CLEAR_COLOR = 0x0c1113;
 
@@ -18,6 +19,8 @@ export class Game {
   private readonly map: TacticalMap;
   private readonly player: PlayerController;
   private readonly weapons: WeaponManager;
+  private readonly combat: CombatSystem;
+  private fireHeld = false;
   private readonly canvas: HTMLCanvasElement;
   private debugEnabled = false;
   private frameAccumulator = 0;
@@ -57,6 +60,7 @@ export class Game {
     }
     this.player = new PlayerController(this.camera, this.canvas, this.map.colliders, playerSpawn);
     this.weapons = new WeaponManager(this.camera);
+    this.combat = new CombatSystem(this.scene, this.camera);
     this.mount();
   }
 
@@ -75,6 +79,10 @@ export class Game {
     this.root.replaceChildren(this.canvas, this.createOverlay(), this.debugElement);
     window.addEventListener('resize', this.handleResize, { passive: true });
     window.addEventListener('keydown', this.handleKeyDown);
+    this.canvas.addEventListener('pointerdown', this.handlePointerDown);
+    this.canvas.addEventListener('pointerup', this.handlePointerUp);
+    this.canvas.addEventListener('pointercancel', this.handlePointerUp);
+    this.canvas.addEventListener('contextmenu', this.preventContextMenu);
     this.handleResize();
   }
 
@@ -141,6 +149,13 @@ export class Game {
 
     this.player.update(deltaSeconds);
     this.weapons.update(deltaSeconds);
+    if (this.fireHeld && this.player.isPointerLocked) {
+      const shot = this.weapons.tryFire(this.player.isMoving);
+      if (shot) {
+        this.combat.fire(shot);
+      }
+    }
+    this.combat.update(deltaSeconds);
     this.renderer.render(this.scene, this.camera);
   };
 
@@ -160,5 +175,21 @@ export class Game {
     event.preventDefault();
     this.debugEnabled = !this.debugEnabled;
     this.debugElement.hidden = !this.debugEnabled;
+  };
+
+  private readonly handlePointerDown = (event: PointerEvent): void => {
+    if (event.button === 0) {
+      this.fireHeld = true;
+    }
+  };
+
+  private readonly handlePointerUp = (event: PointerEvent): void => {
+    if (event.button === 0) {
+      this.fireHeld = false;
+    }
+  };
+
+  private readonly preventContextMenu = (event: MouseEvent): void => {
+    event.preventDefault();
   };
 }

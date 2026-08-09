@@ -7,13 +7,17 @@ export class WeaponManager {
   private readonly ammo = new Map<string, WeaponAmmo>();
   private readonly viewModelRoot = new THREE.Group();
   private readonly viewModels = new Map<string, THREE.Group>();
+  private readonly muzzleFlash = new THREE.PointLight(0xffd3a0, 0, 3.5, 2);
   private activeIndex = 0;
   private reloadRemaining = 0;
   private fireCooldown = 0;
+  private muzzleFlashRemaining = 0;
 
   public constructor(private readonly camera: THREE.PerspectiveCamera) {
     this.viewModelRoot.name = 'first-person-weapon';
     this.camera.add(this.viewModelRoot);
+    this.muzzleFlash.position.set(0, 0, -0.9);
+    this.viewModelRoot.add(this.muzzleFlash);
 
     for (const definition of WEAPON_DEFINITIONS) {
       this.ammo.set(definition.id, {
@@ -45,6 +49,8 @@ export class WeaponManager {
 
   public update(deltaSeconds: number): void {
     this.fireCooldown = Math.max(0, this.fireCooldown - deltaSeconds);
+    this.muzzleFlashRemaining = Math.max(0, this.muzzleFlashRemaining - deltaSeconds);
+    this.muzzleFlash.intensity = this.muzzleFlashRemaining > 0 ? 5 : 0;
     if (this.reloadRemaining <= 0) {
       return;
     }
@@ -87,6 +93,7 @@ export class WeaponManager {
 
     this.activeAmmo.magazine -= 1;
     this.fireCooldown = this.activeWeapon.fireInterval;
+    this.muzzleFlashRemaining = 0.045;
     return {
       weapon: this.activeWeapon,
       spread: this.activeWeapon.hipSpread + (moving ? this.activeWeapon.movementSpread : 0),

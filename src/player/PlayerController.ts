@@ -45,6 +45,10 @@ export class PlayerController {
     return document.pointerLockElement === this.canvas;
   }
 
+  public get isMoving(): boolean {
+    return this.velocity.lengthSq() > 0.2;
+  }
+
   public setEnabled(enabled: boolean): void {
     this.enabled = enabled;
     if (!enabled) {
