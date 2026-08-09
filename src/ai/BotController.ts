@@ -4,13 +4,10 @@ import { Health } from '../combat/DamageSystem';
 import type { CombatHitbox, CombatTarget, CombatSystem } from '../combat/CombatSystem';
 import { WEAPON_DEFINITIONS, type WeaponShot } from '../weapons/WeaponTypes';
 import type { CoverPoint } from '../world/WorldTypes';
+import type { BotDifficultyProfile } from './BotDifficulty';
 
 export type BotState = 'patrol' | 'search' | 'pursue' | 'dead';
 
-const PATROL_SPEED = 2.7;
-const PURSUIT_SPEED = 3.4;
-const PERCEPTION_INTERVAL = 0.18;
-const TARGET_MEMORY = 3.2;
 const BOT_WEAPON = WEAPON_DEFINITIONS[2]!;
 
 export class BotController {
@@ -34,6 +31,7 @@ export class BotController {
   private reserve = BOT_WEAPON.reserveAmmo;
   private fireCooldown = 0;
   private reloadRemaining = 0;
+  private reactionRemaining = 0;
   private bodyMesh!: THREE.Mesh;
   private headMesh!: THREE.Mesh;
 
@@ -43,6 +41,7 @@ export class BotController {
     private readonly combat: CombatSystem,
     private readonly playerHealth: Health,
     private readonly coverPoints: readonly CoverPoint[],
+    private readonly profile: BotDifficultyProfile,
     scene: THREE.Scene,
     spawn: THREE.Vector3,
   ) {
@@ -62,15 +61,19 @@ export class BotController {
 
     this.perceptionRemaining -= deltaSeconds;
     if (this.perceptionRemaining <= 0) {
-      this.perceptionRemaining = PERCEPTION_INTERVAL;
+      this.perceptionRemaining = this.profile.perceptionInterval;
       this.updatePerception(playerPosition);
     }
 
     if (this.state === 'pursue' || this.state === 'search') {
       this.target.copy(this.state === 'pursue' ? playerPosition : this.coverSelected ? this.coverTarget : this.patrolNode);
-      this.moveToward(this.target, this.state === 'pursue' ? PURSUIT_SPEED : PATROL_SPEED, deltaSeconds);
+      if (this.state === 'pursue' && this.position.distanceToSquared(playerPosition) <= this.profile.preferredCombatDistance * this.profile.preferredCombatDistance) {
+        this.faceTarget(playerPosition);
+      } else {
+        this.moveToward(this.target, this.state === 'pursue' ? this.profile.pursuitSpeed : this.profile.patrolSpeed, deltaSeconds);
+      }
     } else {
-      this.moveToward(this.patrolNode, PATROL_SPEED, deltaSeconds);
+      this.moveToward(this.patrolNode, this.profile.patrolSpeed, deltaSeconds);
     }
 
     if (this.position.distanceToSquared(this.patrolNode) < 2.6 && this.state === 'patrol') {
@@ -92,6 +95,7 @@ export class BotController {
     this.memoryRemaining = 0;
     this.playerVisible = false;
     this.coverSelected = false;
+    this.reactionRemaining = 0;
     this.magazine = BOT_WEAPON.magazineSize;
     this.reserve = BOT_WEAPON.reserveAmmo;
     this.fireCooldown = 0;
@@ -117,17 +121,21 @@ export class BotController {
 
   private updatePerception(playerPosition: THREE.Vector3): void {
     const distance = this.position.distanceTo(playerPosition);
-    const visible = distance < 82 && this.navigation.canSee(this.position, playerPosition);
+    const wasVisible = this.playerVisible;
+    const visible = distance < this.profile.perceptionRange && this.navigation.canSee(this.position, playerPosition);
     this.playerVisible = visible;
     if (visible) {
       this.state = 'pursue';
-      this.memoryRemaining = TARGET_MEMORY;
+      this.memoryRemaining = this.profile.targetMemory;
+      if (!wasVisible) {
+        this.reactionRemaining = this.profile.reactionDelay;
+      }
       this.target.copy(playerPosition);
       this.coverSelected = false;
       return;
     }
 
-    this.memoryRemaining = Math.max(0, this.memoryRemaining - PERCEPTION_INTERVAL);
+    this.memoryRemaining = Math.max(0, this.memoryRemaining - this.profile.perceptionInterval);
     if (this.memoryRemaining > 0) {
       this.state = 'search';
       if (!this.coverSelected) {
@@ -141,6 +149,7 @@ export class BotController {
 
   private updateWeapon(deltaSeconds: number): void {
     this.fireCooldown = Math.max(0, this.fireCooldown - deltaSeconds);
+    this.reactionRemaining = Math.max(0, this.reactionRemaining - deltaSeconds);
     if (this.reloadRemaining <= 0) {
       return;
     }
@@ -154,7 +163,7 @@ export class BotController {
   }
 
   private updateCombat(playerPosition: THREE.Vector3): void {
-    if (this.state !== 'pursue' || !this.playerVisible || this.reloadRemaining > 0) {
+    if (this.state !== 'pursue' || !this.playerVisible || this.reloadRemaining > 0 || this.reactionRemaining > 0) {
       return;
     }
 
@@ -170,7 +179,7 @@ export class BotController {
     }
 
     this.aimDirection.subVectors(playerPosition, this.position).normalize();
-    const aimError = 0.018;
+    const aimError = (1 - this.profile.accuracy) * 0.065;
     this.aimDirection.x += (Math.random() - 0.5) * aimError;
     this.aimDirection.y += (Math.random() - 0.5) * aimError;
     this.aimDirection.z += (Math.random() - 0.5) * aimError;
@@ -185,7 +194,7 @@ export class BotController {
     };
     this.combat.fireAtTarget(this.position, this.aimDirection, shot, target, this.id);
     this.magazine -= 1;
-    this.fireCooldown = BOT_WEAPON.fireInterval * 1.65;
+    this.fireCooldown = BOT_WEAPON.fireInterval * this.profile.fireIntervalMultiplier;
   }
 
   private selectCover(playerPosition: THREE.Vector3): void {
@@ -194,7 +203,7 @@ export class BotController {
     for (const cover of this.coverPoints) {
       const distanceToBot = cover.position.distanceToSquared(this.position);
       const distanceToPlayer = cover.position.distanceToSquared(playerPosition);
-      const score = distanceToBot - distanceToPlayer * 0.18;
+      const score = distanceToBot - distanceToPlayer * this.profile.coverBias;
       if (score < bestScore) {
         best = cover;
         bestScore = score;
@@ -223,6 +232,14 @@ export class BotController {
     const movementAmount = Math.min(distance, speed * deltaSeconds);
     this.position.addScaledVector(this.movement, movementAmount);
     this.root.rotation.y = Math.atan2(this.movement.x, this.movement.z);
+  }
+
+  private faceTarget(target: THREE.Vector3): void {
+    this.movement.subVectors(target, this.position);
+    this.movement.y = 0;
+    if (this.movement.lengthSq() > 0.001) {
+      this.root.rotation.y = Math.atan2(this.movement.x, this.movement.z);
+    }
   }
 
   private pickPatrolTarget(): THREE.Vector3 {

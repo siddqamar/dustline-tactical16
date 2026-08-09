@@ -10,6 +10,7 @@ import { HUD } from '../ui/HUD';
 import { RoundManager } from './RoundManager';
 import { Navigation } from '../ai/Navigation';
 import { BotDirector } from '../ai/BotDirector';
+import { getBotDifficulty } from '../ai/BotDifficulty';
 
 const CLEAR_COLOR = 0x0c1113;
 
@@ -71,7 +72,8 @@ export class Game {
     this.player = new PlayerController(this.camera, this.canvas, this.map.colliders, playerSpawn);
     this.weapons = new WeaponManager(this.camera);
     this.combat = new CombatSystem(this.scene, this.camera);
-    this.bots = new BotDirector(this.scene, navigation, this.combat, this.playerHealth, this.map.spawns, this.map.coverPoints);
+    const difficulty = getBotDifficulty(new URLSearchParams(window.location.search).get('difficulty'));
+    this.bots = new BotDirector(this.scene, navigation, this.combat, this.playerHealth, this.map.spawns, this.map.coverPoints, difficulty);
     this.hud = new HUD(this.weapons);
     this.combat.subscribe((event) => this.hud.handleCombatEvent(event));
     this.round = new RoundManager(this.state, this.playerHealth);

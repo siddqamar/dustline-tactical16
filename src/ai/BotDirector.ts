@@ -5,6 +5,7 @@ import type { MapSpawn } from '../world/WorldTypes';
 import type { CoverPoint } from '../world/WorldTypes';
 import type { CombatSystem } from '../combat/CombatSystem';
 import type { Health } from '../combat/DamageSystem';
+import { BOT_DIFFICULTIES, type BotDifficulty } from './BotDifficulty';
 
 export class BotDirector {
   public readonly bots: BotController[] = [];
@@ -18,6 +19,7 @@ export class BotDirector {
     private readonly playerHealth: Health,
     spawns: readonly MapSpawn[],
     coverPoints: readonly CoverPoint[],
+    public readonly difficulty: BotDifficulty,
   ) {
     const eastSpawns = spawns.filter((spawn) => spawn.id.startsWith('east'));
     const offsets = [
@@ -32,7 +34,7 @@ export class BotDirector {
         continue;
       }
       this.spawnPositions.push(spawn.position.clone().add(offsets[index] ?? new THREE.Vector3()));
-      const bot = new BotController(`enemy-${index + 1}`, this.navigation, this.combat, this.playerHealth, coverPoints, this.scene, this.spawnPositions[index]!);
+      const bot = new BotController(`enemy-${index + 1}`, this.navigation, this.combat, this.playerHealth, coverPoints, BOT_DIFFICULTIES[difficulty], this.scene, this.spawnPositions[index]!);
       bot.hitboxes.forEach((hitbox) => this.combat.registerHitbox(hitbox));
       this.bots.push(bot);
     }
