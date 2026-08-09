@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import { GameLoop } from './GameLoop';
 import { GameState } from './GameState';
+import { TacticalMap } from '../world/TacticalMap';
 
 const CLEAR_COLOR = 0x0c1113;
-const WORLD_SIZE = 120;
 
 export class Game {
   private readonly camera: THREE.PerspectiveCamera;
@@ -13,6 +13,7 @@ export class Game {
   private readonly renderer: THREE.WebGLRenderer;
   private readonly state = new GameState();
   private readonly scene: THREE.Scene;
+  private readonly map: TacticalMap;
   private readonly canvas: HTMLCanvasElement;
   private debugEnabled = false;
   private frameAccumulator = 0;
@@ -44,6 +45,8 @@ export class Game {
 
     this.loop = new GameLoop(this.update);
     this.buildRuntimePreview();
+    this.map = new TacticalMap();
+    this.scene.add(this.map.root);
     this.mount();
   }
 
@@ -114,57 +117,6 @@ export class Game {
     keyLight.shadow.camera.top = 45;
     keyLight.shadow.camera.bottom = -45;
     this.scene.add(keyLight);
-
-    const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(WORLD_SIZE, WORLD_SIZE),
-      new THREE.MeshStandardMaterial({ color: 0x303a38, roughness: 0.96, metalness: 0.02 }),
-    );
-    ground.rotation.x = -Math.PI / 2;
-    ground.receiveShadow = true;
-    this.scene.add(ground);
-
-    const laneMaterial = new THREE.MeshStandardMaterial({
-      color: 0x5c665d,
-      roughness: 0.84,
-      metalness: 0.08,
-    });
-    const lane = new THREE.Mesh(new THREE.BoxGeometry(28, 0.12, 52), laneMaterial);
-    lane.position.y = 0.06;
-    lane.receiveShadow = true;
-    this.scene.add(lane);
-
-    const markerMaterial = new THREE.MeshStandardMaterial({
-      color: 0xb8c46d,
-      roughness: 0.56,
-      metalness: 0.16,
-      emissive: 0x353c18,
-      emissiveIntensity: 0.5,
-    });
-    const markerGeometry = new THREE.BoxGeometry(2.4, 0.2, 0.35);
-    for (const z of [-20, -8, 4, 16]) {
-      const marker = new THREE.Mesh(markerGeometry, markerMaterial);
-      marker.position.set(0, 0.16, z);
-      marker.castShadow = true;
-      this.scene.add(marker);
-    }
-
-    const coverMaterial = new THREE.MeshStandardMaterial({
-      color: 0x555b56,
-      roughness: 0.88,
-      metalness: 0.06,
-    });
-    const coverGeometry = new THREE.BoxGeometry(4.2, 2.1, 2.2);
-    for (const position of [
-      new THREE.Vector3(-9, 1.05, -16),
-      new THREE.Vector3(9, 1.05, -2),
-      new THREE.Vector3(-8, 1.05, 12),
-    ]) {
-      const cover = new THREE.Mesh(coverGeometry, coverMaterial);
-      cover.position.copy(position);
-      cover.castShadow = true;
-      cover.receiveShadow = true;
-      this.scene.add(cover);
-    }
   }
 
   private readonly update = (deltaSeconds: number): void => {
@@ -198,4 +150,3 @@ export class Game {
     this.debugElement.hidden = !this.debugEnabled;
   };
 }
-
