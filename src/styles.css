@@ -239,6 +239,31 @@ body {
   text-align: right;
 }
 
+.hud-round {
+  position: absolute;
+  top: clamp(5rem, 10vh, 7rem);
+  left: 50%;
+  display: grid;
+  gap: 0.2rem;
+  transform: translateX(-50%);
+  text-align: center;
+  text-shadow: 0 0.15rem 1rem rgb(0 0 0 / 76%);
+}
+
+.hud-round-number {
+  color: rgb(224 232 216 / 48%);
+  font-size: 0.52rem;
+  font-weight: 750;
+  letter-spacing: 0.24em;
+}
+
+.hud-round-value {
+  color: #d1d982;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+}
+
 .hud-weapon-name {
   color: rgb(229 237 218 / 72%);
   font-size: 0.62rem;

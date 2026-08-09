@@ -7,6 +7,7 @@ import { WeaponManager } from '../weapons/WeaponManager';
 import { CombatSystem } from '../combat/CombatSystem';
 import { Health } from '../combat/DamageSystem';
 import { HUD } from '../ui/HUD';
+import { RoundManager } from './RoundManager';
 
 const CLEAR_COLOR = 0x0c1113;
 
@@ -24,6 +25,7 @@ export class Game {
   private readonly combat: CombatSystem;
   private readonly hud: HUD;
   private readonly playerHealth = new Health(100);
+  private readonly round: RoundManager;
   private fireHeld = false;
   private readonly canvas: HTMLCanvasElement;
   private debugEnabled = false;
@@ -66,12 +68,14 @@ export class Game {
     this.weapons = new WeaponManager(this.camera);
     this.combat = new CombatSystem(this.scene, this.camera);
     this.hud = new HUD(this.weapons);
-    this.combat.subscribe(this.hud.handleCombatEvent);
+    this.combat.subscribe((event) => this.hud.handleCombatEvent(event));
+    this.round = new RoundManager(this.state, this.playerHealth);
+    this.round.subscribe((snapshot) => this.hud.setRound(snapshot));
     this.mount();
   }
 
   public start(): void {
-    this.state.set('playing');
+    this.round.startRound();
     this.clock.start();
     this.loop.start();
   }
@@ -153,6 +157,8 @@ export class Game {
       this.frameCount = 0;
     }
 
+    this.round.update(deltaSeconds);
+    this.player.setEnabled(this.round.isActive);
     this.player.update(deltaSeconds);
     this.weapons.update(deltaSeconds);
     if (this.fireHeld && this.player.isPointerLocked) {
@@ -176,6 +182,11 @@ export class Game {
   };
 
   private readonly handleKeyDown = (event: KeyboardEvent): void => {
+    if (event.key === 'Enter') {
+      this.round.restart();
+      return;
+    }
+
     if (event.key !== 'F3') {
       return;
     }

@@ -1,5 +1,6 @@
 import type { CombatEvent } from '../combat/CombatSystem';
 import type { WeaponManager } from '../weapons/WeaponManager';
+import type { RoundSnapshot } from '../game/RoundManager';
 
 export class HUD {
   public readonly element = document.createElement('div');
@@ -11,6 +12,8 @@ export class HUD {
   private readonly reloadValue: HTMLElement;
   private readonly hitMarker: HTMLElement;
   private readonly damageFlash: HTMLElement;
+  private readonly roundValue: HTMLElement;
+  private readonly roundNumber: HTMLElement;
   private hitMarkerTimer = 0;
   private damageFlashTimer = 0;
   private health = 100;
@@ -34,6 +37,7 @@ export class HUD {
         <div class="hud-ammo"><strong class="hud-ammo-value">15 / 60</strong><span>READY</span></div>
         <div class="hud-reload" hidden>RELOADING</div>
       </div>
+      <div class="hud-round"><span class="hud-round-number">ROUND 01</span><strong class="hud-round-value">DEPLOYMENT</strong></div>
       <div class="hud-hit-marker" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
       <div class="hud-damage-flash" aria-hidden="true"></div>
     `;
@@ -45,7 +49,9 @@ export class HUD {
     const reloadValue = this.element.querySelector<HTMLElement>('.hud-reload');
     const hitMarker = this.element.querySelector<HTMLElement>('.hud-hit-marker');
     const damageFlash = this.element.querySelector<HTMLElement>('.hud-damage-flash');
-    if (!healthValue || !healthBar || !ammoValue || !weaponValue || !reloadValue || !hitMarker || !damageFlash) {
+    const roundValue = this.element.querySelector<HTMLElement>('.hud-round-value');
+    const roundNumber = this.element.querySelector<HTMLElement>('.hud-round-number');
+    if (!healthValue || !healthBar || !ammoValue || !weaponValue || !reloadValue || !hitMarker || !damageFlash || !roundValue || !roundNumber) {
       throw new Error('HUD template is incomplete.');
     }
 
@@ -56,6 +62,8 @@ export class HUD {
     this.reloadValue = reloadValue;
     this.hitMarker = hitMarker;
     this.damageFlash = damageFlash;
+    this.roundValue = roundValue;
+    this.roundNumber = roundNumber;
   }
 
   public update(deltaSeconds: number): void {
@@ -83,8 +91,22 @@ export class HUD {
     this.hitMarkerTimer = 0.16;
   }
 
+  public setRound(snapshot: RoundSnapshot): void {
+    this.roundNumber.textContent = `ROUND ${snapshot.roundNumber.toString().padStart(2, '0')}`;
+    if (snapshot.phase === 'countdown') {
+      this.roundValue.textContent = `DEPLOY IN ${Math.ceil(snapshot.countdown).toString()}`;
+      return;
+    }
+
+    if (snapshot.phase === 'active') {
+      this.roundValue.textContent = 'LIVE COMBAT';
+      return;
+    }
+
+    this.roundValue.textContent = snapshot.winner === 'player' ? 'ROUND WON' : 'ROUND LOST';
+  }
+
   public showDamage(): void {
     this.damageFlashTimer = 0.24;
   }
 }
-
