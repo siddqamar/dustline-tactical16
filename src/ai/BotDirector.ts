@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import { BotController } from './BotController';
 import { Navigation } from './Navigation';
 import type { MapSpawn } from '../world/WorldTypes';
+import type { CoverPoint } from '../world/WorldTypes';
+import type { CombatSystem } from '../combat/CombatSystem';
+import type { Health } from '../combat/DamageSystem';
 
 export class BotDirector {
   public readonly bots: BotController[] = [];
@@ -11,7 +14,10 @@ export class BotDirector {
   public constructor(
     private readonly scene: THREE.Scene,
     private readonly navigation: Navigation,
+    private readonly combat: CombatSystem,
+    private readonly playerHealth: Health,
     spawns: readonly MapSpawn[],
+    coverPoints: readonly CoverPoint[],
   ) {
     const eastSpawns = spawns.filter((spawn) => spawn.id.startsWith('east'));
     const offsets = [
@@ -26,11 +32,18 @@ export class BotDirector {
         continue;
       }
       this.spawnPositions.push(spawn.position.clone().add(offsets[index] ?? new THREE.Vector3()));
-      this.bots.push(new BotController(`enemy-${index + 1}`, this.navigation, this.scene, this.spawnPositions[index]!));
+      const bot = new BotController(`enemy-${index + 1}`, this.navigation, this.combat, this.playerHealth, coverPoints, this.scene, this.spawnPositions[index]!);
+      bot.hitboxes.forEach((hitbox) => this.combat.registerHitbox(hitbox));
+      this.bots.push(bot);
     }
   }
 
   public update(deltaSeconds: number, playerPosition: THREE.Vector3, active: boolean): void {
+    this.bots.forEach((bot) => {
+      if (bot.health.isDead && bot.state !== 'dead') {
+        bot.markDead();
+      }
+    });
     this.bots.forEach((bot) => bot.update(deltaSeconds, playerPosition, active));
   }
 
@@ -43,8 +56,12 @@ export class BotDirector {
     });
   }
 
+  public markDead(id: string): void {
+    const bot = this.bots.find((candidate) => candidate.id === id);
+    bot?.markDead();
+  }
+
   public get aliveCount(): number {
     return this.bots.filter((bot) => bot.state !== 'dead').length;
   }
 }
-

@@ -13,6 +13,15 @@ export interface CombatHitbox {
   readonly health: Health;
 }
 
+export interface CombatTarget {
+  readonly ownerId: string;
+  readonly position: THREE.Vector3;
+  readonly radius: number;
+  readonly zone: HitZone;
+  readonly multiplier: number;
+  readonly health: Health;
+}
+
 export interface ShotResult {
   readonly hit: boolean;
   readonly point: THREE.Vector3;
@@ -34,6 +43,9 @@ interface ImpactEffect {
 export class CombatSystem {
   private readonly raycaster = new THREE.Raycaster();
   private readonly impactDirection = new THREE.Vector3();
+  private readonly rayDirection = new THREE.Vector3();
+  private readonly targetOffset = new THREE.Vector3();
+  private readonly closestPoint = new THREE.Vector3();
   private readonly impactEffects: ImpactEffect[] = [];
   private readonly registeredHitboxes = new Map<THREE.Object3D, CombatHitbox>();
   private readonly listeners = new Set<CombatEventListener>();
@@ -70,12 +82,42 @@ export class CombatSystem {
   }
 
   public fire(shot: WeaponShot): ShotResult {
-    this.raycaster.setFromCamera(new THREE.Vector2(0, 0), this.camera);
-    this.raycaster.far = shot.weapon.range;
-    const intersections = this.raycaster.intersectObject(this.scene, true);
-    const intersection = intersections.find((candidate) => !candidate.object.userData.isImpactEffect);
+    const direction = this.camera.getWorldDirection(this.impactDirection);
+    return this.fireRay(this.camera.position, direction, shot, null);
+  }
+
+  public fireAtTarget(
+    origin: THREE.Vector3,
+    direction: THREE.Vector3,
+    shot: WeaponShot,
+    target: CombatTarget,
+    ignoreOwnerId: string,
+  ): ShotResult {
+    const normalizedDirection = this.rayDirection.copy(direction).normalize();
+    const toTarget = this.targetOffset.subVectors(target.position, origin);
+    const projection = toTarget.dot(normalizedDirection);
+    const targetDistance = toTarget.length();
+    const closestPoint = this.closestPoint.copy(normalizedDirection).multiplyScalar(projection).add(origin);
+    const targetInPath = projection > 0 && projection <= shot.weapon.range && closestPoint.distanceToSquared(target.position) <= target.radius * target.radius;
+    const intersections = this.getSceneIntersections(origin, normalizedDirection, shot.weapon.range, ignoreOwnerId);
+    const blocker = intersections[0];
+    if (!targetInPath || (blocker && blocker.distance < targetDistance - target.radius)) {
+      const point = blocker?.point.clone() ?? origin.clone().addScaledVector(normalizedDirection, shot.weapon.range);
+      this.spawnImpact(point);
+      return { hit: Boolean(blocker), point, damage: null, ownerId: null };
+    }
+
+    const damage = target.health.applyDamage(shot.weapon.damage, target.zone, target.multiplier);
+    const point = target.position.clone();
+    this.spawnImpact(point);
+    return { hit: true, point, damage, ownerId: target.ownerId };
+  }
+
+  private fireRay(origin: THREE.Vector3, direction: THREE.Vector3, shot: WeaponShot, ignoreOwnerId: string | null): ShotResult {
+    const normalizedDirection = this.rayDirection.copy(direction).normalize();
+    const intersection = this.getSceneIntersections(origin, normalizedDirection, shot.weapon.range, ignoreOwnerId)[0];
     if (!intersection) {
-      const point = this.camera.getWorldDirection(this.impactDirection).multiplyScalar(shot.weapon.range).add(this.camera.position);
+      const point = origin.clone().addScaledVector(normalizedDirection, shot.weapon.range);
       const result = { hit: false, point: point.clone(), damage: null, ownerId: null };
       this.emit({ type: 'shot', shot, result });
       return result;
@@ -96,6 +138,18 @@ export class CombatSystem {
     this.emit({ type: 'shot', shot, result });
     this.emit({ type: 'hit', shot, result });
     return result;
+  }
+
+  private getSceneIntersections(origin: THREE.Vector3, direction: THREE.Vector3, range: number, ignoreOwnerId: string | null): THREE.Intersection[] {
+    this.raycaster.set(origin, direction);
+    this.raycaster.far = range;
+    return this.raycaster.intersectObject(this.scene, true).filter((candidate) => {
+      if (candidate.object.userData.isImpactEffect) {
+        return false;
+      }
+      const hitbox = this.findHitbox(candidate.object);
+      return !hitbox || (!hitbox.health.isDead && hitbox.ownerId !== ignoreOwnerId);
+    });
   }
 
   public update(deltaSeconds: number): void {

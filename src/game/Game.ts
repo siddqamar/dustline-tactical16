@@ -64,7 +64,6 @@ export class Game {
     this.map = new TacticalMap();
     this.scene.add(this.map.root);
     const navigation = new Navigation(this.map.navigationPoints, this.scene);
-    this.bots = new BotDirector(this.scene, navigation, this.map.spawns);
     const playerSpawn = this.map.spawns.find((spawn) => spawn.id === 'west-main') ?? this.map.spawns[0];
     if (!playerSpawn) {
       throw new Error('Tactical map does not define a player spawn.');
@@ -72,6 +71,7 @@ export class Game {
     this.player = new PlayerController(this.camera, this.canvas, this.map.colliders, playerSpawn);
     this.weapons = new WeaponManager(this.camera);
     this.combat = new CombatSystem(this.scene, this.camera);
+    this.bots = new BotDirector(this.scene, navigation, this.combat, this.playerHealth, this.map.spawns, this.map.coverPoints);
     this.hud = new HUD(this.weapons);
     this.combat.subscribe((event) => this.hud.handleCombatEvent(event));
     this.round = new RoundManager(this.state, this.playerHealth);
@@ -168,11 +168,24 @@ export class Game {
     this.player.update(deltaSeconds);
     this.bots.update(deltaSeconds, this.player.position, this.round.isActive);
     this.weapons.update(deltaSeconds);
-    if (this.fireHeld && this.player.isPointerLocked) {
+    if (this.fireHeld && this.player.isPointerLocked && this.round.isActive) {
       const shot = this.weapons.tryFire(this.player.isMoving);
       if (shot) {
-        this.combat.fire(shot);
+        const result = this.combat.fire(shot);
+        if (result.damage && result.ownerId && result.damage.killed) {
+          this.bots.markDead(result.ownerId);
+        }
       }
+    }
+    const healthBeforeBots = this.playerHealth.current;
+    this.bots.update(deltaSeconds, this.player.position, this.round.isActive);
+    if (this.playerHealth.current < healthBeforeBots) {
+      this.hud.showDamage();
+    }
+    if (this.playerHealth.isDead) {
+      this.round.notifyPlayerDeath();
+    } else if (this.bots.aliveCount === 0) {
+      this.round.notifyEnemiesEliminated();
     }
     this.combat.update(deltaSeconds);
     this.hud.setHealth(this.playerHealth.current);
