@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import type { BoxCollider, CoverPoint, MapSpawn, NavigationPoint, ObjectiveArea } from './WorldTypes';
+import { createSurfaceTexture } from './SurfaceTexture';
 
 const MAP_HALF_SIZE = 38;
 const WALL_HEIGHT = 3.4;
@@ -21,14 +22,14 @@ export class TacticalMap {
 
   private readonly geometryCache = new Map<string, THREE.BoxGeometry>();
   private readonly materials = {
-    concrete: new THREE.MeshStandardMaterial({ color: 0x716f66, roughness: 0.91, metalness: 0.03 }),
-    concreteLight: new THREE.MeshStandardMaterial({ color: 0x8b8779, roughness: 0.88, metalness: 0.02 }),
-    darkConcrete: new THREE.MeshStandardMaterial({ color: 0x4e524f, roughness: 0.94, metalness: 0.02 }),
-    wood: new THREE.MeshStandardMaterial({ color: 0x725a3c, roughness: 0.83, metalness: 0.02 }),
-    metal: new THREE.MeshStandardMaterial({ color: 0x555c58, roughness: 0.54, metalness: 0.46 }),
+    concrete: new THREE.MeshStandardMaterial({ color: 0x716f66, map: createSurfaceTexture('concrete', 1.5, 1.5), roughness: 0.91, metalness: 0.03 }),
+    concreteLight: new THREE.MeshStandardMaterial({ color: 0x8b8779, map: createSurfaceTexture('concrete', 1.1, 1.1), roughness: 0.88, metalness: 0.02 }),
+    darkConcrete: new THREE.MeshStandardMaterial({ color: 0x4e524f, map: createSurfaceTexture('concrete', 2, 2), roughness: 0.94, metalness: 0.02 }),
+    wood: new THREE.MeshStandardMaterial({ color: 0x725a3c, map: createSurfaceTexture('wood', 1.2, 1.2), roughness: 0.83, metalness: 0.02 }),
+    metal: new THREE.MeshStandardMaterial({ color: 0x555c58, map: createSurfaceTexture('metal', 1.3, 1.3), roughness: 0.54, metalness: 0.46 }),
     siteAlpha: new THREE.MeshStandardMaterial({ color: 0xa99542, roughness: 0.73, metalness: 0.04, emissive: 0x342e0a, emissiveIntensity: 0.3 }),
     siteBravo: new THREE.MeshStandardMaterial({ color: 0x4b8b8c, roughness: 0.72, metalness: 0.05, emissive: 0x0a2d2d, emissiveIntensity: 0.34 }),
-    ground: new THREE.MeshStandardMaterial({ color: 0x373b38, roughness: 0.98, metalness: 0.01 }),
+    ground: new THREE.MeshStandardMaterial({ color: 0x373b38, map: createSurfaceTexture('ground', 4, 4), roughness: 0.98, metalness: 0.01 }),
   };
 
   public constructor() {
