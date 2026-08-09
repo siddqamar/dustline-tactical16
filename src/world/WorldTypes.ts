@@ -22,9 +22,14 @@ export interface CoverPoint {
   readonly radius: number;
 }
 
+export interface NavigationPoint {
+  readonly id: string;
+  readonly position: THREE.Vector3;
+  readonly links: readonly string[];
+}
+
 export interface ObjectiveArea {
   readonly id: 'alpha' | 'bravo';
   readonly position: THREE.Vector3;
   readonly radius: number;
 }
-

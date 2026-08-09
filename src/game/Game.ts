@@ -8,6 +8,8 @@ import { CombatSystem } from '../combat/CombatSystem';
 import { Health } from '../combat/DamageSystem';
 import { HUD } from '../ui/HUD';
 import { RoundManager } from './RoundManager';
+import { Navigation } from '../ai/Navigation';
+import { BotDirector } from '../ai/BotDirector';
 
 const CLEAR_COLOR = 0x0c1113;
 
@@ -26,6 +28,7 @@ export class Game {
   private readonly hud: HUD;
   private readonly playerHealth = new Health(100);
   private readonly round: RoundManager;
+  private readonly bots: BotDirector;
   private fireHeld = false;
   private readonly canvas: HTMLCanvasElement;
   private debugEnabled = false;
@@ -60,6 +63,8 @@ export class Game {
     this.buildRuntimePreview();
     this.map = new TacticalMap();
     this.scene.add(this.map.root);
+    const navigation = new Navigation(this.map.navigationPoints, this.scene);
+    this.bots = new BotDirector(this.scene, navigation, this.map.spawns);
     const playerSpawn = this.map.spawns.find((spawn) => spawn.id === 'west-main') ?? this.map.spawns[0];
     if (!playerSpawn) {
       throw new Error('Tactical map does not define a player spawn.');
@@ -75,6 +80,7 @@ export class Game {
   }
 
   public start(): void {
+    this.bots.reset();
     this.round.startRound();
     this.clock.start();
     this.loop.start();
@@ -160,6 +166,7 @@ export class Game {
     this.round.update(deltaSeconds);
     this.player.setEnabled(this.round.isActive);
     this.player.update(deltaSeconds);
+    this.bots.update(deltaSeconds, this.player.position, this.round.isActive);
     this.weapons.update(deltaSeconds);
     if (this.fireHeld && this.player.isPointerLocked) {
       const shot = this.weapons.tryFire(this.player.isMoving);

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { BoxCollider, CoverPoint, MapSpawn, ObjectiveArea } from './WorldTypes';
+import type { BoxCollider, CoverPoint, MapSpawn, NavigationPoint, ObjectiveArea } from './WorldTypes';
 
 const MAP_HALF_SIZE = 38;
 const WALL_HEIGHT = 3.4;
@@ -16,6 +16,7 @@ export class TacticalMap {
   public readonly colliders: BoxCollider[] = [];
   public readonly spawns: MapSpawn[] = [];
   public readonly coverPoints: CoverPoint[] = [];
+  public readonly navigationPoints: NavigationPoint[] = [];
   public readonly objectives: ObjectiveArea[] = [];
 
   private readonly geometryCache = new Map<string, THREE.BoxGeometry>();
@@ -197,24 +198,25 @@ export class TacticalMap {
   }
 
   private defineNavigationData(): void {
-    const navigationPoints = [
-      new THREE.Vector3(-27, 1.65, 0),
-      new THREE.Vector3(-18, 1.65, 0),
-      new THREE.Vector3(0, 1.65, 0),
-      new THREE.Vector3(18, 1.65, 0),
-      new THREE.Vector3(27, 1.65, 0),
-      new THREE.Vector3(-21, 1.65, -20),
-      new THREE.Vector3(0, 1.65, -20),
-      new THREE.Vector3(21, 1.65, -20),
-      new THREE.Vector3(-21, 1.65, 20),
-      new THREE.Vector3(0, 1.65, 20),
-      new THREE.Vector3(21, 1.65, 20),
+    const navigationPoints: readonly NavigationPoint[] = [
+      { id: 'west', position: new THREE.Vector3(-27, 1.65, 0), links: ['west-mid', 'upper-west', 'lower-west'] },
+      { id: 'west-mid', position: new THREE.Vector3(-18, 1.65, 0), links: ['west', 'center', 'upper-west', 'upper-center'] },
+      { id: 'center', position: new THREE.Vector3(0, 1.65, 0), links: ['west-mid', 'east-mid', 'upper-center', 'lower-center'] },
+      { id: 'east-mid', position: new THREE.Vector3(18, 1.65, 0), links: ['center', 'east', 'upper-center', 'lower-center'] },
+      { id: 'east', position: new THREE.Vector3(27, 1.65, 0), links: ['east-mid', 'upper-east', 'lower-east'] },
+      { id: 'upper-west', position: new THREE.Vector3(-21, 1.65, -20), links: ['west', 'west-mid', 'upper-center'] },
+      { id: 'upper-center', position: new THREE.Vector3(0, 1.65, -20), links: ['upper-west', 'upper-east', 'west-mid', 'east-mid'] },
+      { id: 'upper-east', position: new THREE.Vector3(21, 1.65, -20), links: ['upper-center', 'east'] },
+      { id: 'lower-west', position: new THREE.Vector3(-21, 1.65, 20), links: ['west', 'lower-center'] },
+      { id: 'lower-center', position: new THREE.Vector3(0, 1.65, 20), links: ['lower-west', 'lower-east', 'center', 'east-mid'] },
+      { id: 'lower-east', position: new THREE.Vector3(21, 1.65, 20), links: ['lower-center', 'east'] },
     ];
 
-    navigationPoints.forEach((position, index) => {
+    navigationPoints.forEach((node, index) => {
+      this.navigationPoints.push(node);
       this.coverPoints.push({
         id: `nav-${index}`,
-        position: position.clone(),
+        position: node.position.clone(),
         facing: new THREE.Vector3(index < navigationPoints.length / 2 ? 1 : -1, 0, 0),
         radius: 3.2,
       });
@@ -259,4 +261,3 @@ export class TacticalMap {
     };
   }
 }
-
