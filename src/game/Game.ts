@@ -11,6 +11,7 @@ import { RoundManager } from './RoundManager';
 import { Navigation } from '../ai/Navigation';
 import { BotDirector } from '../ai/BotDirector';
 import { getBotDifficulty } from '../ai/BotDifficulty';
+import { AudioManager } from '../audio/AudioManager';
 
 const CLEAR_COLOR = 0x0c1113;
 
@@ -30,6 +31,8 @@ export class Game {
   private readonly playerHealth = new Health(100);
   private readonly round: RoundManager;
   private readonly bots: BotDirector;
+  private readonly audio = new AudioManager();
+  private footstepRemaining = 0;
   private fireHeld = false;
   private readonly canvas: HTMLCanvasElement;
   private debugEnabled = false;
@@ -76,8 +79,10 @@ export class Game {
     this.bots = new BotDirector(this.scene, navigation, this.combat, this.playerHealth, this.map.spawns, this.map.coverPoints, difficulty);
     this.hud = new HUD(this.weapons);
     this.combat.subscribe((event) => this.hud.handleCombatEvent(event));
+    this.combat.subscribe((event) => this.audio.handleCombatEvent(event));
     this.round = new RoundManager(this.state, this.playerHealth);
     this.round.subscribe((snapshot) => this.hud.setRound(snapshot));
+    this.round.subscribe((snapshot) => this.audio.handleRound(snapshot));
     this.mount();
   }
 
@@ -168,6 +173,11 @@ export class Game {
     this.round.update(deltaSeconds);
     this.player.setEnabled(this.round.isActive);
     this.player.update(deltaSeconds);
+    this.footstepRemaining = Math.max(0, this.footstepRemaining - deltaSeconds);
+    if (this.round.isActive && this.player.isMoving && this.player.isPointerLocked && this.footstepRemaining === 0) {
+      this.audio.playFootstep();
+      this.footstepRemaining = 0.42;
+    }
     this.weapons.update(deltaSeconds);
     if (this.fireHeld && this.player.isPointerLocked && this.round.isActive) {
       const shot = this.weapons.tryFire(this.player.isMoving);
@@ -208,6 +218,10 @@ export class Game {
       return;
     }
 
+    if (event.code === 'KeyR') {
+      this.audio.playReload();
+    }
+
     if (event.key !== 'F3') {
       return;
     }
@@ -218,6 +232,7 @@ export class Game {
   };
 
   private readonly handlePointerDown = (event: PointerEvent): void => {
+    this.audio.initialize();
     if (event.button === 0) {
       this.fireHeld = true;
     }
