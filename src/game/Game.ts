@@ -3,6 +3,7 @@ import { GameLoop } from './GameLoop';
 import { GameState } from './GameState';
 import { TacticalMap } from '../world/TacticalMap';
 import { PlayerController } from '../player/PlayerController';
+import { WeaponManager } from '../weapons/WeaponManager';
 
 const CLEAR_COLOR = 0x0c1113;
 
@@ -16,6 +17,7 @@ export class Game {
   private readonly scene: THREE.Scene;
   private readonly map: TacticalMap;
   private readonly player: PlayerController;
+  private readonly weapons: WeaponManager;
   private readonly canvas: HTMLCanvasElement;
   private debugEnabled = false;
   private frameAccumulator = 0;
@@ -54,6 +56,7 @@ export class Game {
       throw new Error('Tactical map does not define a player spawn.');
     }
     this.player = new PlayerController(this.camera, this.canvas, this.map.colliders, playerSpawn);
+    this.weapons = new WeaponManager(this.camera);
     this.mount();
   }
 
@@ -137,6 +140,7 @@ export class Game {
     }
 
     this.player.update(deltaSeconds);
+    this.weapons.update(deltaSeconds);
     this.renderer.render(this.scene, this.camera);
   };
 
