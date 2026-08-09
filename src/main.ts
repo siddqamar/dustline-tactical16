@@ -1,4 +1,5 @@
 import './styles.css';
+import { Game } from './game/Game';
 
 const app = document.querySelector<HTMLElement>('#app');
 
@@ -6,5 +7,5 @@ if (!app) {
   throw new Error('Application root was not found.');
 }
 
-app.dataset.ready = 'true';
-
+const game = new Game(app);
+game.start();
