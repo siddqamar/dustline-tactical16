@@ -17,6 +17,9 @@ export class HUD {
   private hitMarkerTimer = 0;
   private damageFlashTimer = 0;
   private health = 100;
+  private lastAmmoText = '';
+  private lastWeaponText = '';
+  private lastReloading = false;
 
   public constructor(private readonly weapons: WeaponManager) {
     this.element.className = 'tactical-hud';
@@ -68,9 +71,21 @@ export class HUD {
 
   public update(deltaSeconds: number): void {
     const ammo = this.weapons.activeAmmo;
-    this.ammoValue.textContent = `${ammo.magazine.toString().padStart(2, '0')} / ${ammo.reserve.toString().padStart(2, '0')}`;
-    this.weaponValue.textContent = this.weapons.activeWeapon.label;
-    this.reloadValue.hidden = !this.weapons.isReloading;
+    const ammoText = `${ammo.magazine.toString().padStart(2, '0')} / ${ammo.reserve.toString().padStart(2, '0')}`;
+    const weaponText = this.weapons.activeWeapon.label;
+    const reloading = this.weapons.isReloading;
+    if (ammoText !== this.lastAmmoText) {
+      this.ammoValue.textContent = ammoText;
+      this.lastAmmoText = ammoText;
+    }
+    if (weaponText !== this.lastWeaponText) {
+      this.weaponValue.textContent = weaponText;
+      this.lastWeaponText = weaponText;
+    }
+    if (reloading !== this.lastReloading) {
+      this.reloadValue.hidden = !reloading;
+      this.lastReloading = reloading;
+    }
     this.hitMarkerTimer = Math.max(0, this.hitMarkerTimer - deltaSeconds);
     this.damageFlashTimer = Math.max(0, this.damageFlashTimer - deltaSeconds);
     this.hitMarker.style.opacity = this.hitMarkerTimer > 0 ? '1' : '0';
@@ -79,8 +94,11 @@ export class HUD {
 
   public setHealth(value: number): void {
     this.health = Math.max(0, Math.min(100, value));
-    this.healthValue.textContent = Math.round(this.health).toString().padStart(3, '0');
-    this.healthBar.style.transform = `scaleX(${this.health / 100})`;
+    const healthText = Math.round(this.health).toString().padStart(3, '0');
+    if (this.healthValue.textContent !== healthText) {
+      this.healthValue.textContent = healthText;
+      this.healthBar.style.transform = `scaleX(${this.health / 100})`;
+    }
   }
 
   public handleCombatEvent(event: CombatEvent): void {

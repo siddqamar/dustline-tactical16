@@ -53,7 +53,7 @@ export class Game {
     });
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.08;
@@ -167,7 +167,8 @@ export class Game {
     this.frameCount += 1;
     if (this.frameAccumulator >= 0.5) {
       const fps = Math.round(this.frameCount / this.frameAccumulator);
-      this.debugElement.textContent = `FPS ${fps.toString().padStart(3, '0')}  |  STATE ${this.state.current.toUpperCase()}`;
+      const renderInfo = this.renderer.info.render;
+      this.debugElement.textContent = `FPS ${fps.toString().padStart(3, '0')}  |  DRAW ${renderInfo.calls.toString().padStart(3, '0')}  |  TRI ${Math.round(renderInfo.triangles / 1000).toString().padStart(3, '0')}K  |  BOTS ${this.bots.aliveCount}`;
       this.frameAccumulator = 0;
       this.frameCount = 0;
     }
