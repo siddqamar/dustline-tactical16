@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { GameLoop } from './GameLoop';
 import { GameState } from './GameState';
 import { TacticalMap } from '../world/TacticalMap';
+import { PlayerController } from '../player/PlayerController';
 
 const CLEAR_COLOR = 0x0c1113;
 
@@ -14,6 +15,7 @@ export class Game {
   private readonly state = new GameState();
   private readonly scene: THREE.Scene;
   private readonly map: TacticalMap;
+  private readonly player: PlayerController;
   private readonly canvas: HTMLCanvasElement;
   private debugEnabled = false;
   private frameAccumulator = 0;
@@ -47,6 +49,11 @@ export class Game {
     this.buildRuntimePreview();
     this.map = new TacticalMap();
     this.scene.add(this.map.root);
+    const playerSpawn = this.map.spawns.find((spawn) => spawn.id === 'west-main') ?? this.map.spawns[0];
+    if (!playerSpawn) {
+      throw new Error('Tactical map does not define a player spawn.');
+    }
+    this.player = new PlayerController(this.camera, this.canvas, this.map.colliders, playerSpawn);
     this.mount();
   }
 
@@ -129,6 +136,7 @@ export class Game {
       this.frameCount = 0;
     }
 
+    this.player.update(deltaSeconds);
     this.renderer.render(this.scene, this.camera);
   };
 
