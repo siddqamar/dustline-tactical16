@@ -20,6 +20,12 @@ export interface ShotResult {
   readonly ownerId: string | null;
 }
 
+export type CombatEvent =
+  | { readonly type: 'shot'; readonly shot: WeaponShot; readonly result: ShotResult }
+  | { readonly type: 'hit'; readonly shot: WeaponShot; readonly result: ShotResult };
+
+export type CombatEventListener = (event: CombatEvent) => void;
+
 interface ImpactEffect {
   readonly mesh: THREE.Mesh;
   lifetime: number;
@@ -30,6 +36,7 @@ export class CombatSystem {
   private readonly impactDirection = new THREE.Vector3();
   private readonly impactEffects: ImpactEffect[] = [];
   private readonly registeredHitboxes = new Map<THREE.Object3D, CombatHitbox>();
+  private readonly listeners = new Set<CombatEventListener>();
   private impactCursor = 0;
 
   public constructor(
@@ -57,6 +64,11 @@ export class CombatSystem {
     this.registeredHitboxes.delete(object);
   }
 
+  public subscribe(listener: CombatEventListener): () => void {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
   public fire(shot: WeaponShot): ShotResult {
     this.raycaster.setFromCamera(new THREE.Vector2(0, 0), this.camera);
     this.raycaster.far = shot.weapon.range;
@@ -64,19 +76,26 @@ export class CombatSystem {
     const intersection = intersections.find((candidate) => !candidate.object.userData.isImpactEffect);
     if (!intersection) {
       const point = this.camera.getWorldDirection(this.impactDirection).multiplyScalar(shot.weapon.range).add(this.camera.position);
-      return { hit: false, point: point.clone(), damage: null, ownerId: null };
+      const result = { hit: false, point: point.clone(), damage: null, ownerId: null };
+      this.emit({ type: 'shot', shot, result });
+      return result;
     }
 
     const point = intersection.point.clone();
     const hitbox = this.findHitbox(intersection.object);
     if (!hitbox) {
       this.spawnImpact(point);
-      return { hit: true, point, damage: null, ownerId: null };
+      const result = { hit: true, point, damage: null, ownerId: null };
+      this.emit({ type: 'shot', shot, result });
+      return result;
     }
 
     const damage = hitbox.health.applyDamage(shot.weapon.damage, hitbox.zone, hitbox.multiplier);
     this.spawnImpact(point);
-    return { hit: true, point, damage, ownerId: hitbox.ownerId };
+    const result = { hit: true, point, damage, ownerId: hitbox.ownerId };
+    this.emit({ type: 'shot', shot, result });
+    this.emit({ type: 'hit', shot, result });
+    return result;
   }
 
   public update(deltaSeconds: number): void {
@@ -114,5 +133,9 @@ export class CombatSystem {
     effect.mesh.scale.setScalar(1);
     effect.mesh.visible = true;
     effect.lifetime = IMPACT_LIFETIME;
+  }
+
+  private emit(event: CombatEvent): void {
+    this.listeners.forEach((listener) => listener(event));
   }
 }

@@ -5,6 +5,8 @@ import { TacticalMap } from '../world/TacticalMap';
 import { PlayerController } from '../player/PlayerController';
 import { WeaponManager } from '../weapons/WeaponManager';
 import { CombatSystem } from '../combat/CombatSystem';
+import { Health } from '../combat/DamageSystem';
+import { HUD } from '../ui/HUD';
 
 const CLEAR_COLOR = 0x0c1113;
 
@@ -20,6 +22,8 @@ export class Game {
   private readonly player: PlayerController;
   private readonly weapons: WeaponManager;
   private readonly combat: CombatSystem;
+  private readonly hud: HUD;
+  private readonly playerHealth = new Health(100);
   private fireHeld = false;
   private readonly canvas: HTMLCanvasElement;
   private debugEnabled = false;
@@ -61,6 +65,8 @@ export class Game {
     this.player = new PlayerController(this.camera, this.canvas, this.map.colliders, playerSpawn);
     this.weapons = new WeaponManager(this.camera);
     this.combat = new CombatSystem(this.scene, this.camera);
+    this.hud = new HUD(this.weapons);
+    this.combat.subscribe(this.hud.handleCombatEvent);
     this.mount();
   }
 
@@ -76,7 +82,7 @@ export class Game {
   }
 
   private mount(): void {
-    this.root.replaceChildren(this.canvas, this.createOverlay(), this.debugElement);
+    this.root.replaceChildren(this.canvas, this.createOverlay(), this.hud.element, this.debugElement);
     window.addEventListener('resize', this.handleResize, { passive: true });
     window.addEventListener('keydown', this.handleKeyDown);
     this.canvas.addEventListener('pointerdown', this.handlePointerDown);
@@ -156,6 +162,8 @@ export class Game {
       }
     }
     this.combat.update(deltaSeconds);
+    this.hud.setHealth(this.playerHealth.current);
+    this.hud.update(deltaSeconds);
     this.renderer.render(this.scene, this.camera);
   };
 

@@ -168,6 +168,144 @@ body {
   letter-spacing: 0.1em;
 }
 
+.tactical-hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: #e9efdf;
+}
+
+.hud-controls {
+  position: absolute;
+  bottom: 1.35rem;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgb(224 232 216 / 46%);
+  font-size: 0.54rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+}
+
+.hud-controls span {
+  margin-left: 0.95rem;
+  color: #c6d274;
+}
+
+.hud-health {
+  position: absolute;
+  bottom: 2.2rem;
+  left: clamp(1.2rem, 3vw, 2rem);
+  width: min(14rem, 28vw);
+}
+
+.hud-block-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.45rem;
+  color: rgb(216 226 209 / 56%);
+  font-size: 0.55rem;
+  font-weight: 750;
+  letter-spacing: 0.2em;
+}
+
+.hud-health-value {
+  color: #c6d274;
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+}
+
+.hud-health-track {
+  height: 0.28rem;
+  overflow: hidden;
+  border: 1px solid rgb(213 224 202 / 22%);
+  background: rgb(211 224 207 / 7%);
+}
+
+.hud-health-bar {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: left center;
+  background: linear-gradient(90deg, #91a54e, #d1d879);
+  transition: transform 140ms ease-out;
+}
+
+.hud-weapon {
+  position: absolute;
+  right: clamp(1.2rem, 3vw, 2rem);
+  bottom: 1.8rem;
+  text-align: right;
+}
+
+.hud-weapon-name {
+  color: rgb(229 237 218 / 72%);
+  font-size: 0.62rem;
+  font-weight: 750;
+  letter-spacing: 0.18em;
+}
+
+.hud-ammo {
+  display: flex;
+  gap: 0.7rem;
+  align-items: baseline;
+  margin-top: 0.25rem;
+}
+
+.hud-ammo strong {
+  color: #eef3e4;
+  font-size: clamp(1.6rem, 3vw, 2.25rem);
+  font-weight: 500;
+  letter-spacing: -0.06em;
+}
+
+.hud-ammo span,
+.hud-reload {
+  color: #c6d274;
+  font-size: 0.54rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+}
+
+.hud-reload {
+  margin-top: 0.2rem;
+}
+
+.hud-hit-marker {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1.6rem;
+  height: 1.6rem;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 70ms ease-out;
+}
+
+.hud-hit-marker i {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0.55rem;
+  height: 1px;
+  background: #eef3e4;
+  transform-origin: left center;
+}
+
+.hud-hit-marker i:nth-child(1) { transform: rotate(45deg) translateX(0.18rem); }
+.hud-hit-marker i:nth-child(2) { transform: rotate(135deg) translateX(0.18rem); }
+.hud-hit-marker i:nth-child(3) { transform: rotate(225deg) translateX(0.18rem); }
+.hud-hit-marker i:nth-child(4) { transform: rotate(315deg) translateX(0.18rem); }
+
+.hud-damage-flash {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(ellipse at center, transparent 48%, rgb(190 58 40 / 72%) 150%);
+  transition: opacity 80ms ease-out;
+}
+
 .boot-screen {
   display: grid;
   min-height: 100%;
