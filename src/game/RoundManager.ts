@@ -14,6 +14,7 @@ export interface RoundSnapshot {
 export type RoundListener = (snapshot: RoundSnapshot) => void;
 
 const COUNTDOWN_SECONDS = 3;
+const DEPLOYMENT_GRACE_SECONDS = 2;
 
 export class RoundManager {
   private snapshot: RoundSnapshot = {
@@ -22,6 +23,7 @@ export class RoundManager {
     countdown: COUNTDOWN_SECONDS,
     winner: null,
   };
+  private activeElapsed = 0;
   private readonly listeners = new Set<RoundListener>();
 
   public constructor(
@@ -37,6 +39,10 @@ export class RoundManager {
     return this.snapshot.phase === 'active';
   }
 
+  public get isCombatActive(): boolean {
+    return this.isActive && this.activeElapsed >= DEPLOYMENT_GRACE_SECONDS;
+  }
+
   public subscribe(listener: RoundListener): () => void {
     this.listeners.add(listener);
     listener(this.snapshot);
@@ -45,6 +51,7 @@ export class RoundManager {
 
   public startRound(): void {
     this.playerHealth.reset();
+    this.activeElapsed = 0;
     this.setSnapshot({
       phase: 'countdown',
       roundNumber: this.snapshot.roundNumber + 1,
@@ -55,12 +62,18 @@ export class RoundManager {
   }
 
   public update(deltaSeconds: number): void {
+    if (this.snapshot.phase === 'active') {
+      this.activeElapsed += deltaSeconds;
+      return;
+    }
+
     if (this.snapshot.phase !== 'countdown') {
       return;
     }
 
     const countdown = Math.max(0, this.snapshot.countdown - deltaSeconds);
     if (countdown === 0) {
+      this.activeElapsed = 0;
       this.setSnapshot({ ...this.snapshot, phase: 'active', countdown: 0 });
       this.gameState.set('playing');
       return;
@@ -104,4 +117,3 @@ export class RoundManager {
     this.listeners.forEach((listener) => listener(snapshot));
   }
 }
-

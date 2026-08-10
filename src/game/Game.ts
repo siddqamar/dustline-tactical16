@@ -192,7 +192,7 @@ export class Game {
       }
     }
     const healthBeforeBots = this.playerHealth.current;
-    this.bots.update(deltaSeconds, this.player.position, this.round.isActive);
+    this.bots.update(deltaSeconds, this.player.position, this.round.isCombatActive);
     if (this.playerHealth.current < healthBeforeBots) {
       this.hud.showDamage();
     }
