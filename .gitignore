@@ -8,3 +8,7 @@ test-results/
 *.local
 idea.md 
 todo.md
+
+# Local V2 implementation notes
+decison.md
+V2_FILE_CHANGES.md

@@ -23,6 +23,10 @@ body {
   overflow: hidden;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 #app {
   position: relative;
   isolation: isolate;
@@ -47,6 +51,14 @@ body {
   padding: clamp(1.2rem, 3vw, 2rem);
   pointer-events: none;
   background: linear-gradient(180deg, rgb(3 7 8 / 48%), transparent 24%, transparent 72%, rgb(3 7 8 / 32%));
+}
+
+.game-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at center, transparent 52%, rgb(0 0 0 / 42%) 125%),
+    linear-gradient(90deg, rgb(0 0 0 / 15%), transparent 12%, transparent 88%, rgb(0 0 0 / 15%));
 }
 
 .game-brand {
@@ -175,6 +187,85 @@ body {
   color: #e9efdf;
 }
 
+.hud-scoreboard {
+  position: absolute;
+  top: clamp(1.15rem, 2.5vw, 1.8rem);
+  left: 50%;
+  display: grid;
+  grid-template-columns: minmax(6.6rem, 9rem) 5.5rem minmax(6.6rem, 9rem);
+  align-items: stretch;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 0.4rem 1rem rgb(0 0 0 / 42%));
+}
+
+.hud-team,
+.hud-match-clock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.55rem;
+  border-top: 1px solid rgb(222 231 217 / 20%);
+  border-bottom: 1px solid rgb(222 231 217 / 11%);
+  background: rgb(10 16 17 / 82%);
+  backdrop-filter: blur(0.7rem);
+}
+
+.hud-team {
+  gap: 0.65rem;
+  padding: 0 0.75rem;
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0.17em;
+}
+
+.hud-team-alpha {
+  border-left: 2px solid #72a79d;
+  color: #a7d5cc;
+}
+
+.hud-team-bravo {
+  border-right: 2px solid #ba7456;
+  color: #e1a58c;
+}
+
+.hud-team strong {
+  color: #f2f4ec;
+  font-size: 1.2rem;
+  letter-spacing: 0;
+}
+
+.hud-team i {
+  display: grid;
+  width: 1.3rem;
+  height: 1.3rem;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 0.55rem;
+  font-style: normal;
+}
+
+.hud-match-clock {
+  display: grid;
+  gap: 0.05rem;
+  border-right: 1px solid rgb(222 231 217 / 12%);
+  border-left: 1px solid rgb(222 231 217 / 12%);
+  color: #eef2e9;
+  text-align: center;
+}
+
+.hud-match-clock small {
+  color: rgb(224 232 216 / 48%);
+  font-size: 0.46rem;
+  font-weight: 750;
+  letter-spacing: 0.16em;
+}
+
+.hud-match-clock strong {
+  font: 700 0.92rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: 0.08em;
+}
+
 .hud-controls {
   position: absolute;
   bottom: 1.35rem;
@@ -197,6 +288,18 @@ body {
   bottom: 2.2rem;
   left: clamp(1.2rem, 3vw, 2rem);
   width: min(14rem, 28vw);
+}
+
+.hud-armor-value {
+  margin-top: 0.45rem;
+  color: rgb(216 226 209 / 42%);
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.hud-armor-value.is-equipped {
+  color: #77b3a8;
 }
 
 .hud-block-label {
@@ -248,6 +351,41 @@ body {
   transform: translateX(-50%);
   text-align: center;
   text-shadow: 0 0.15rem 1rem rgb(0 0 0 / 76%);
+}
+
+.hud-objective {
+  color: rgb(224 232 216 / 52%);
+  font-size: 0.49rem;
+  font-weight: 750;
+  letter-spacing: 0.2em;
+}
+
+.hud-identity {
+  position: absolute;
+  bottom: 6.7rem;
+  left: clamp(1.2rem, 3vw, 2rem);
+  display: grid;
+  gap: 0.2rem;
+  padding-left: 0.7rem;
+  border-left: 2px solid #72a79d;
+}
+
+.hud-identity span {
+  color: rgb(216 226 209 / 42%);
+  font-size: 0.46rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+}
+
+.hud-identity strong {
+  color: #eef3e9;
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+}
+
+.hud-identity small {
+  color: #c8d478;
+  font: 700 0.66rem/1.2 ui-monospace, SFMono-Regular, Consolas, monospace;
 }
 
 .hud-round-number {
@@ -330,6 +468,453 @@ body {
   opacity: 0;
   background: radial-gradient(ellipse at center, transparent 48%, rgb(190 58 40 / 72%) 150%);
   transition: opacity 80ms ease-out;
+}
+
+.hud-interaction,
+.hud-announcement {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 1px solid rgb(205 216 125 / 32%);
+  background: rgb(9 14 15 / 84%);
+  color: #d7df91;
+  font-size: 0.62rem;
+  font-weight: 850;
+  letter-spacing: 0.16em;
+  box-shadow: 0 0.6rem 2rem rgb(0 0 0 / 28%);
+  backdrop-filter: blur(0.8rem);
+}
+
+.hud-interaction {
+  bottom: 22%;
+  padding: 0.65rem 0.9rem;
+}
+
+.hud-announcement {
+  top: 28%;
+  padding: 0.85rem 1.15rem;
+  animation: hud-announcement-in 180ms ease-out;
+}
+
+.hud-hit-marker.is-kill i {
+  background: #d9ac75;
+}
+
+@keyframes hud-announcement-in {
+  from { opacity: 0; transform: translate(-50%, 0.45rem); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.prematch-menu,
+.buy-menu {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  padding: clamp(1rem, 3vw, 3rem);
+  color: #e9efea;
+}
+
+.prematch-menu {
+  background:
+    linear-gradient(90deg, rgb(7 12 13 / 97%) 0%, rgb(7 12 13 / 90%) 47%, rgb(7 12 13 / 36%) 100%),
+    radial-gradient(circle at 78% 25%, rgb(83 132 128 / 28%), transparent 36rem),
+    linear-gradient(145deg, #11191b, #283231 62%, #171b1a);
+}
+
+.prematch-backdrop {
+  position: absolute;
+  inset: 0;
+  opacity: 0.26;
+  background-image:
+    linear-gradient(rgb(173 196 192 / 7%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(173 196 192 / 7%) 1px, transparent 1px);
+  background-size: 4rem 4rem;
+  mask-image: linear-gradient(90deg, black, transparent 75%);
+}
+
+.prematch-panel {
+  position: relative;
+  width: min(58rem, 100%);
+  padding: clamp(1.4rem, 3.5vw, 3.5rem);
+  border-left: 2px solid #789f94;
+  background: linear-gradient(100deg, rgb(11 17 18 / 92%), rgb(11 17 18 / 66%));
+  box-shadow: 0 1.8rem 5rem rgb(0 0 0 / 38%);
+}
+
+.menu-eyebrow,
+.buy-header p {
+  margin: 0 0 0.75rem;
+  color: #99b8af;
+  font-size: 0.58rem;
+  font-weight: 850;
+  letter-spacing: 0.27em;
+}
+
+.prematch-panel h1,
+.buy-header h2 {
+  margin: 0;
+  color: #f0f3ed;
+  font-size: clamp(2.1rem, 5vw, 4.6rem);
+  font-weight: 680;
+  line-height: 0.94;
+  letter-spacing: -0.045em;
+}
+
+.menu-brief {
+  max-width: 43rem;
+  margin: 1.25rem 0 1.8rem;
+  color: #98a5a3;
+  font-size: 0.86rem;
+  line-height: 1.65;
+}
+
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.menu-field {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.9rem;
+  border: 1px solid rgb(186 205 198 / 14%);
+  background: rgb(188 211 202 / 4%);
+}
+
+.menu-field > span,
+.role-picker legend {
+  color: #dce6df;
+  font-size: 0.57rem;
+  font-weight: 850;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+}
+
+.menu-field select {
+  width: 100%;
+  padding: 0.7rem 0;
+  border: 0;
+  border-bottom: 1px solid rgb(171 194 185 / 28%);
+  outline: none;
+  background: #11191a;
+  color: #eef3ec;
+  font: 750 0.76rem/1 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.1em;
+}
+
+.menu-field small,
+.role-card small {
+  color: #788684;
+  font-size: 0.62rem;
+  line-height: 1.45;
+}
+
+.role-picker {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 1.4rem 0 0;
+  padding: 1.6rem 0 0;
+  border: 0;
+  border-top: 1px solid rgb(180 201 193 / 14%);
+}
+
+.role-picker legend {
+  padding-right: 0.8rem;
+}
+
+.role-card,
+.buy-item {
+  position: relative;
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+  padding: 0.95rem;
+  border: 1px solid rgb(184 203 196 / 14%);
+  background: rgb(17 26 27 / 72%);
+  color: #e6ece7;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
+}
+
+.role-card:hover,
+.role-card:focus-visible,
+.buy-item:hover:not(:disabled),
+.buy-item:focus-visible:not(:disabled) {
+  border-color: rgb(137 177 165 / 68%);
+  background: rgb(32 48 47 / 82%);
+  transform: translateY(-1px);
+}
+
+.role-card.is-selected {
+  border-color: #82ad9f;
+  background: linear-gradient(120deg, rgb(48 75 71 / 78%), rgb(21 31 32 / 74%));
+  box-shadow: inset 3px 0 #82ad9f;
+}
+
+.role-index,
+.buy-category {
+  color: #83a99f;
+  font: 700 0.52rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+}
+
+.role-card strong {
+  font-size: 0.85rem;
+  letter-spacing: 0.16em;
+}
+
+.menu-footer,
+.buy-footer {
+  display: flex;
+  gap: 1.4rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+}
+
+.menu-footer div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.menu-footer span,
+.buy-footer span {
+  color: #687674;
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+}
+
+.menu-footer strong {
+  color: #b8c5be;
+  font-size: 0.64rem;
+  letter-spacing: 0.12em;
+}
+
+.menu-primary {
+  min-width: 12rem;
+  padding: 0.95rem 1.25rem;
+  border: 1px solid #b7c979;
+  background: #b7c979;
+  color: #111715;
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.17em;
+  cursor: pointer;
+  transition: filter 120ms ease, transform 120ms ease;
+}
+
+.menu-primary:hover,
+.menu-primary:focus-visible {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.buy-menu {
+  z-index: 9;
+  background: rgb(6 10 11 / 72%);
+  backdrop-filter: blur(0.8rem);
+}
+
+.buy-panel {
+  width: min(64rem, 100%);
+  padding: clamp(1.2rem, 2.7vw, 2.4rem);
+  border: 1px solid rgb(183 203 196 / 19%);
+  background: linear-gradient(145deg, rgb(13 21 22 / 97%), rgb(19 29 29 / 94%));
+  box-shadow: 0 1.8rem 5rem rgb(0 0 0 / 52%);
+}
+
+.buy-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-bottom: 1.2rem;
+  border-bottom: 1px solid rgb(183 203 196 / 14%);
+}
+
+.buy-header h2 {
+  font-size: clamp(1.8rem, 3vw, 3rem);
+}
+
+.buy-wallet {
+  display: grid;
+  gap: 0.25rem;
+  text-align: right;
+}
+
+.buy-wallet span,
+.buy-context span {
+  color: #788783;
+  font-size: 0.5rem;
+  font-weight: 850;
+  letter-spacing: 0.18em;
+}
+
+.buy-wallet strong {
+  color: #cbd77e;
+  font: 600 1.35rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.buy-context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 0;
+}
+
+.buy-context strong {
+  color: #e6ece5;
+  font: 700 0.88rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.buy-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.buy-item {
+  min-height: 9.6rem;
+  align-content: start;
+}
+
+.buy-item strong {
+  margin-top: 0.25rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.05em;
+}
+
+.buy-item small {
+  color: #788583;
+  font-size: 0.58rem;
+  line-height: 1.45;
+}
+
+.buy-item b {
+  align-self: end;
+  margin-top: auto;
+  color: #cbd77e;
+  font: 700 0.7rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.buy-item:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+.buy-item.is-owned {
+  border-color: rgb(110 169 155 / 45%);
+  opacity: 0.68;
+}
+
+.buy-item.is-owned::after {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  color: #8ec0b3;
+  font-size: 0.48rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  content: "OWNED";
+}
+
+@media (max-width: 760px) {
+  .game-brand,
+  .hud-controls {
+    display: none;
+  }
+
+  .hud-scoreboard {
+    grid-template-columns: 5.5rem 4.6rem 5.5rem;
+  }
+
+  .hud-team span {
+    display: none;
+  }
+
+  .menu-grid,
+  .role-picker {
+    grid-template-columns: 1fr;
+  }
+
+  .buy-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .buy-panel {
+    margin: auto 0;
+  }
+}
+
+@media (max-height: 650px) and (min-width: 761px) {
+  .prematch-menu,
+  .buy-menu {
+    padding: 0.7rem 1.8rem;
+  }
+
+  .prematch-panel {
+    padding: 1.35rem 2rem;
+  }
+
+  .prematch-panel h1 {
+    font-size: 2.8rem;
+  }
+
+  .menu-eyebrow {
+    margin-bottom: 0.45rem;
+  }
+
+  .menu-brief {
+    margin: 0.7rem 0 0.9rem;
+    font-size: 0.75rem;
+    line-height: 1.45;
+  }
+
+  .menu-field,
+  .role-card {
+    padding: 0.65rem 0.8rem;
+  }
+
+  .role-picker {
+    margin-top: 0.8rem;
+    padding-top: 1rem;
+  }
+
+  .menu-footer {
+    margin-top: 0.85rem;
+  }
+
+  .buy-panel {
+    padding: 1.1rem 1.5rem;
+  }
+
+  .buy-header {
+    padding-bottom: 0.7rem;
+  }
+
+  .buy-header h2 {
+    font-size: 2rem;
+  }
+
+  .buy-context {
+    padding: 0.55rem 0;
+  }
+
+  .buy-item {
+    min-height: 7.8rem;
+    padding: 0.7rem;
+  }
+
+  .buy-footer {
+    margin-top: 0.8rem;
+  }
 }
 
 .boot-screen {

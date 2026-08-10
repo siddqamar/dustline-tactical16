@@ -22,7 +22,7 @@ export class PlayerController {
   private pitch = 0;
   private enabled = true;
   private readonly spawnPosition = new THREE.Vector3();
-  private readonly spawnYaw: number;
+  private spawnYaw: number;
 
   public constructor(
     private readonly camera: THREE.PerspectiveCamera,
@@ -53,6 +53,10 @@ export class PlayerController {
     return this.velocity.lengthSq() > 0.2;
   }
 
+  public get isInteracting(): boolean {
+    return this.input.has('KeyE');
+  }
+
   public setEnabled(enabled: boolean): void {
     this.enabled = enabled;
     if (!enabled) {
@@ -67,6 +71,23 @@ export class PlayerController {
     this.desiredVelocity.set(0, 0, 0);
     this.position.copy(this.spawnPosition);
     this.yaw = this.spawnYaw;
+    this.pitch = 0;
+    this.camera.position.copy(this.position);
+    this.camera.rotation.set(this.pitch, this.yaw, 0);
+  }
+
+  public deploy(spawn: MapSpawn): void {
+    this.spawnPosition.copy(spawn.position);
+    this.spawnYaw = spawn.yaw;
+    this.reset();
+  }
+
+  public takeControl(position: THREE.Vector3, yaw: number): void {
+    this.input.clear();
+    this.velocity.set(0, 0, 0);
+    this.desiredVelocity.set(0, 0, 0);
+    this.position.copy(position);
+    this.yaw = yaw;
     this.pitch = 0;
     this.camera.position.copy(this.position);
     this.camera.rotation.set(this.pitch, this.yaw, 0);
