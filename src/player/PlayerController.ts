@@ -21,6 +21,8 @@ export class PlayerController {
   private yaw = 0;
   private pitch = 0;
   private enabled = true;
+  private readonly spawnPosition = new THREE.Vector3();
+  private readonly spawnYaw: number;
 
   public constructor(
     private readonly camera: THREE.PerspectiveCamera,
@@ -28,6 +30,8 @@ export class PlayerController {
     private readonly colliders: readonly BoxCollider[],
     spawn: MapSpawn,
   ) {
+    this.spawnPosition.copy(spawn.position);
+    this.spawnYaw = spawn.yaw;
     this.position.copy(spawn.position);
     this.yaw = spawn.yaw;
     this.camera.rotation.order = 'YXZ';
@@ -55,6 +59,17 @@ export class PlayerController {
       this.velocity.set(0, 0, 0);
       this.input.clear();
     }
+  }
+
+  public reset(): void {
+    this.input.clear();
+    this.velocity.set(0, 0, 0);
+    this.desiredVelocity.set(0, 0, 0);
+    this.position.copy(this.spawnPosition);
+    this.yaw = this.spawnYaw;
+    this.pitch = 0;
+    this.camera.position.copy(this.position);
+    this.camera.rotation.set(this.pitch, this.yaw, 0);
   }
 
   public update(deltaSeconds: number): void {

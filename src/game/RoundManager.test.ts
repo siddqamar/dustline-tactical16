@@ -30,9 +30,11 @@ describe('RoundManager player readiness', () => {
     expect(round.current.phase).toBe('active');
     expect(state.current).toBe('playing');
     expect(round.isCombatActive).toBe(false);
+    expect(round.engagementCountdown).toBe(2);
 
     round.update(2, true);
     expect(round.isCombatActive).toBe(true);
+    expect(round.engagementCountdown).toBe(0);
   });
 
   it('pauses combat whenever the player loses control', () => {
@@ -46,5 +48,6 @@ describe('RoundManager player readiness', () => {
     expect(round.current.awaitingPlayer).toBe(true);
     expect(state.current).toBe('paused');
     expect(round.isCombatActive).toBe(false);
+    expect(round.engagementCountdown).toBe(0);
   });
 });

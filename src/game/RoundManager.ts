@@ -45,6 +45,13 @@ export class RoundManager {
     return this.isActive && !this.snapshot.awaitingPlayer && this.activeElapsed >= DEPLOYMENT_GRACE_SECONDS;
   }
 
+  public get engagementCountdown(): number {
+    if (!this.isActive || this.snapshot.awaitingPlayer) {
+      return 0;
+    }
+    return Math.max(0, DEPLOYMENT_GRACE_SECONDS - this.activeElapsed);
+  }
+
   public subscribe(listener: RoundListener): () => void {
     this.listeners.add(listener);
     listener(this.snapshot);
@@ -117,14 +124,6 @@ export class RoundManager {
     }
 
     this.endRound('player');
-  }
-
-  public restart(): void {
-    if (this.snapshot.phase === 'active') {
-      return;
-    }
-
-    this.startRound();
   }
 
   private endRound(winner: RoundWinner): void {

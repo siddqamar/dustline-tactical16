@@ -46,7 +46,13 @@ export class BotDirector {
         bot.markDead();
       }
     });
-    this.bots.forEach((bot) => bot.update(deltaSeconds, playerPosition, active));
+    const attackers = new Set(
+      this.bots
+        .filter((bot) => bot.canEngage)
+        .sort((left, right) => left.position.distanceToSquared(playerPosition) - right.position.distanceToSquared(playerPosition))
+        .slice(0, BOT_DIFFICULTIES[this.difficulty].maxConcurrentAttackers),
+    );
+    this.bots.forEach((bot) => bot.update(deltaSeconds, playerPosition, active, attackers.has(bot)));
   }
 
   public reset(): void {

@@ -89,8 +89,7 @@ export class Game {
   }
 
   public start(): void {
-    this.bots.reset();
-    this.round.startRound();
+    this.prepareRound();
     this.clock.start();
     this.loop.start();
   }
@@ -174,6 +173,7 @@ export class Game {
     }
 
     this.round.update(deltaSeconds, this.player.isPointerLocked);
+    this.hud.setEngagementCountdown(this.round.engagementCountdown);
     this.player.setEnabled(this.round.isActive && this.player.isPointerLocked);
     this.player.update(deltaSeconds);
     this.footstepRemaining = Math.max(0, this.footstepRemaining - deltaSeconds);
@@ -217,7 +217,9 @@ export class Game {
 
   private readonly handleKeyDown = (event: KeyboardEvent): void => {
     if (event.key === 'Enter') {
-      this.round.restart();
+      if (this.round.current.phase === 'round-end') {
+        this.prepareRound();
+      }
       return;
     }
 
@@ -250,4 +252,12 @@ export class Game {
   private readonly preventContextMenu = (event: MouseEvent): void => {
     event.preventDefault();
   };
+
+  private prepareRound(): void {
+    this.fireHeld = false;
+    this.player.reset();
+    this.weapons.reset();
+    this.bots.reset();
+    this.round.startRound();
+  }
 }

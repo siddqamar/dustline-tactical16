@@ -61,6 +61,21 @@ export class WeaponManager {
     }
   }
 
+  public reset(): void {
+    this.activeIndex = 0;
+    this.reloadRemaining = 0;
+    this.fireCooldown = 0;
+    this.muzzleFlashRemaining = 0;
+    this.muzzleFlash.intensity = 0;
+    for (const definition of WEAPON_DEFINITIONS) {
+      this.ammo.set(definition.id, {
+        magazine: definition.magazineSize,
+        reserve: definition.reserveAmmo,
+      });
+    }
+    this.showActiveViewModel();
+  }
+
   public switchTo(index: number): boolean {
     if (index < 0 || index >= WEAPON_DEFINITIONS.length || index === this.activeIndex || this.isReloading) {
       return false;

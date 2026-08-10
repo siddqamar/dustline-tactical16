@@ -9,7 +9,7 @@ export default defineConfig({
   reporter: 'line',
   use: {
     ...devices['Desktop Chrome'],
-    baseURL: 'http://127.0.0.1:4173',
+    baseURL: 'http://127.0.0.1:4174',
     channel: 'chrome',
     headless: true,
     viewport: { width: 960, height: 540 },
@@ -17,11 +17,5 @@ export default defineConfig({
     launchOptions: {
       args: ['--enable-unsafe-swiftshader'],
     },
-  },
-  webServer: {
-    command: 'npm run dev -- --host 127.0.0.1 --port 4173',
-    url: 'http://127.0.0.1:4173',
-    reuseExistingServer: true,
-    timeout: 120_000,
   },
 });

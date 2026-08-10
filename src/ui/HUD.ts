@@ -20,6 +20,8 @@ export class HUD {
   private lastAmmoText = '';
   private lastWeaponText = '';
   private lastReloading = false;
+  private engagementCountdown = 0;
+  private roundSnapshot: RoundSnapshot | null = null;
 
   public constructor(private readonly weapons: WeaponManager) {
     this.element.className = 'tactical-hud';
@@ -110,7 +112,26 @@ export class HUD {
   }
 
   public setRound(snapshot: RoundSnapshot): void {
+    this.roundSnapshot = snapshot;
     this.roundNumber.textContent = `ROUND ${snapshot.roundNumber.toString().padStart(2, '0')}`;
+    this.renderRoundStatus();
+  }
+
+  public setEngagementCountdown(seconds: number): void {
+    const next = Math.max(0, seconds);
+    if (Math.ceil(next) === Math.ceil(this.engagementCountdown)) {
+      return;
+    }
+    this.engagementCountdown = next;
+    this.renderRoundStatus();
+  }
+
+  private renderRoundStatus(): void {
+    const snapshot = this.roundSnapshot;
+    if (!snapshot) {
+      return;
+    }
+
     if (snapshot.awaitingPlayer) {
       this.roundValue.textContent = snapshot.phase === 'active' ? 'CLICK TO RESUME' : 'CLICK TO DEPLOY';
       return;
@@ -122,11 +143,11 @@ export class HUD {
     }
 
     if (snapshot.phase === 'active') {
-      this.roundValue.textContent = 'LIVE COMBAT';
+      this.roundValue.textContent = this.engagementCountdown > 0 ? `CONTACT IN ${Math.ceil(this.engagementCountdown).toString()}` : 'LIVE COMBAT';
       return;
     }
 
-    this.roundValue.textContent = snapshot.winner === 'player' ? 'ROUND WON' : 'ROUND LOST';
+    this.roundValue.textContent = snapshot.winner === 'player' ? 'ROUND WON - ENTER TO REDEPLOY' : 'ELIMINATED - ENTER TO REDEPLOY';
   }
 
   public showDamage(): void {

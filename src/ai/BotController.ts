@@ -30,6 +30,8 @@ export class BotController {
   private magazine = BOT_WEAPON.magazineSize;
   private reserve = BOT_WEAPON.reserveAmmo;
   private fireCooldown = 0;
+  private burstCooldownRemaining = 0;
+  private burstShotsRemaining = 0;
   private reloadRemaining = 0;
   private reactionRemaining = 0;
   private bodyMesh!: THREE.Mesh;
@@ -54,7 +56,7 @@ export class BotController {
     scene.add(this.root);
   }
 
-  public update(deltaSeconds: number, playerPosition: THREE.Vector3, active: boolean): void {
+  public update(deltaSeconds: number, playerPosition: THREE.Vector3, active: boolean, canFire: boolean): void {
     if (!active || this.state === 'dead') {
       return;
     }
@@ -84,7 +86,7 @@ export class BotController {
     }
 
     this.updateWeapon(deltaSeconds);
-    this.updateCombat(playerPosition);
+    this.updateCombat(playerPosition, canFire);
 
     this.syncVisual();
   }
@@ -99,6 +101,8 @@ export class BotController {
     this.magazine = BOT_WEAPON.magazineSize;
     this.reserve = BOT_WEAPON.reserveAmmo;
     this.fireCooldown = 0;
+    this.burstCooldownRemaining = 0;
+    this.burstShotsRemaining = 0;
     this.reloadRemaining = 0;
     this.health.reset();
     this.path = [];
@@ -117,6 +121,10 @@ export class BotController {
       { ownerId: this.id, zone: 'body', multiplier: 1, object: this.bodyMesh, health: this.health },
       { ownerId: this.id, zone: 'head', multiplier: 2.25, object: this.headMesh, health: this.health },
     ];
+  }
+
+  public get canEngage(): boolean {
+    return this.state === 'pursue' && this.playerVisible && !this.health.isDead;
   }
 
   private updatePerception(playerPosition: THREE.Vector3): void {
@@ -149,6 +157,7 @@ export class BotController {
 
   private updateWeapon(deltaSeconds: number): void {
     this.fireCooldown = Math.max(0, this.fireCooldown - deltaSeconds);
+    this.burstCooldownRemaining = Math.max(0, this.burstCooldownRemaining - deltaSeconds);
     this.reactionRemaining = Math.max(0, this.reactionRemaining - deltaSeconds);
     if (this.reloadRemaining <= 0) {
       return;
@@ -162,8 +171,8 @@ export class BotController {
     }
   }
 
-  private updateCombat(playerPosition: THREE.Vector3): void {
-    if (this.state !== 'pursue' || !this.playerVisible || this.reloadRemaining > 0 || this.reactionRemaining > 0) {
+  private updateCombat(playerPosition: THREE.Vector3, canFire: boolean): void {
+    if (!canFire || !this.canEngage || this.reloadRemaining > 0 || this.reactionRemaining > 0 || this.burstCooldownRemaining > 0) {
       return;
     }
 
@@ -178,6 +187,10 @@ export class BotController {
       return;
     }
 
+    if (this.burstShotsRemaining === 0) {
+      this.burstShotsRemaining = this.profile.burstSize;
+    }
+
     this.aimDirection.subVectors(playerPosition, this.position).normalize();
     const aimError = (1 - this.profile.accuracy) * 0.065;
     this.aimDirection.x += (Math.random() - 0.5) * aimError;
@@ -189,12 +202,16 @@ export class BotController {
       position: playerPosition,
       radius: 0.46,
       zone: 'body',
-      multiplier: 1,
+      multiplier: this.profile.damageMultiplier,
       health: this.playerHealth,
     };
     this.combat.fireAtTarget(this.position, this.aimDirection, shot, target, this.id);
     this.magazine -= 1;
+    this.burstShotsRemaining -= 1;
     this.fireCooldown = BOT_WEAPON.fireInterval * this.profile.fireIntervalMultiplier;
+    if (this.burstShotsRemaining === 0) {
+      this.burstCooldownRemaining = this.profile.burstCooldown;
+    }
   }
 
   private selectCover(playerPosition: THREE.Vector3): void {
