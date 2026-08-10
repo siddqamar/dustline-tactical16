@@ -9,6 +9,7 @@ export interface RoundSnapshot {
   readonly roundNumber: number;
   readonly countdown: number;
   readonly winner: RoundWinner;
+  readonly awaitingPlayer: boolean;
 }
 
 export type RoundListener = (snapshot: RoundSnapshot) => void;
@@ -22,6 +23,7 @@ export class RoundManager {
     roundNumber: 0,
     countdown: COUNTDOWN_SECONDS,
     winner: null,
+    awaitingPlayer: true,
   };
   private activeElapsed = 0;
   private readonly listeners = new Set<RoundListener>();
@@ -40,7 +42,7 @@ export class RoundManager {
   }
 
   public get isCombatActive(): boolean {
-    return this.isActive && this.activeElapsed >= DEPLOYMENT_GRACE_SECONDS;
+    return this.isActive && !this.snapshot.awaitingPlayer && this.activeElapsed >= DEPLOYMENT_GRACE_SECONDS;
   }
 
   public subscribe(listener: RoundListener): () => void {
@@ -57,11 +59,29 @@ export class RoundManager {
       roundNumber: this.snapshot.roundNumber + 1,
       countdown: COUNTDOWN_SECONDS,
       winner: null,
+      awaitingPlayer: true,
     });
-    this.gameState.set('restarting');
+    this.gameState.set('awaiting-player');
   }
 
-  public update(deltaSeconds: number): void {
+  public update(deltaSeconds: number, playerReady: boolean): void {
+    if (this.snapshot.phase === 'round-end') {
+      return;
+    }
+
+    if (!playerReady) {
+      if (!this.snapshot.awaitingPlayer) {
+        this.setSnapshot({ ...this.snapshot, awaitingPlayer: true });
+      }
+      this.gameState.set(this.snapshot.phase === 'active' ? 'paused' : 'awaiting-player');
+      return;
+    }
+
+    if (this.snapshot.awaitingPlayer) {
+      this.setSnapshot({ ...this.snapshot, awaitingPlayer: false });
+      this.gameState.set(this.snapshot.phase === 'active' ? 'playing' : 'restarting');
+    }
+
     if (this.snapshot.phase === 'active') {
       this.activeElapsed += deltaSeconds;
       return;
@@ -74,7 +94,7 @@ export class RoundManager {
     const countdown = Math.max(0, this.snapshot.countdown - deltaSeconds);
     if (countdown === 0) {
       this.activeElapsed = 0;
-      this.setSnapshot({ ...this.snapshot, phase: 'active', countdown: 0 });
+      this.setSnapshot({ ...this.snapshot, phase: 'active', countdown: 0, awaitingPlayer: false });
       this.gameState.set('playing');
       return;
     }

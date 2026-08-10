@@ -120,6 +120,10 @@ export class PlayerController {
   }
 
   private readonly handleKeyDown = (event: KeyboardEvent): void => {
+    if (!this.enabled || !this.isPointerLocked) {
+      return;
+    }
+
     this.input.add(event.code);
   };
 
@@ -144,7 +148,7 @@ export class PlayerController {
   };
 
   private readonly handleCanvasClick = (): void => {
-    if (!this.enabled || this.isPointerLocked) {
+    if (this.isPointerLocked) {
       return;
     }
 

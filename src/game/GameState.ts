@@ -1,4 +1,4 @@
-export type GameStatus = 'loading' | 'playing' | 'round-end' | 'player-dead' | 'restarting';
+export type GameStatus = 'loading' | 'awaiting-player' | 'restarting' | 'playing' | 'paused' | 'player-dead' | 'round-end';
 
 export type GameStateListener = (next: GameStatus, previous: GameStatus) => void;
 
@@ -25,4 +25,3 @@ export class GameState {
     return () => this.listeners.delete(listener);
   }
 }
-

@@ -111,6 +111,11 @@ export class HUD {
 
   public setRound(snapshot: RoundSnapshot): void {
     this.roundNumber.textContent = `ROUND ${snapshot.roundNumber.toString().padStart(2, '0')}`;
+    if (snapshot.awaitingPlayer) {
+      this.roundValue.textContent = snapshot.phase === 'active' ? 'CLICK TO RESUME' : 'CLICK TO DEPLOY';
+      return;
+    }
+
     if (snapshot.phase === 'countdown') {
       this.roundValue.textContent = `DEPLOY IN ${Math.ceil(snapshot.countdown).toString()}`;
       return;

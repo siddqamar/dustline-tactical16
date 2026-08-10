@@ -2,7 +2,9 @@ node_modules/
 dist/
 coverage/
 .vite/
+graphify-out/
+playwright-report/
+test-results/
 *.local
 idea.md 
 todo.md
-

@@ -173,8 +173,8 @@ export class Game {
       this.frameCount = 0;
     }
 
-    this.round.update(deltaSeconds);
-    this.player.setEnabled(this.round.isActive);
+    this.round.update(deltaSeconds, this.player.isPointerLocked);
+    this.player.setEnabled(this.round.isActive && this.player.isPointerLocked);
     this.player.update(deltaSeconds);
     this.footstepRemaining = Math.max(0, this.footstepRemaining - deltaSeconds);
     if (this.round.isActive && this.player.isMoving && this.player.isPointerLocked && this.footstepRemaining === 0) {
