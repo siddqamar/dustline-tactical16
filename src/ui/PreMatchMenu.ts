@@ -20,6 +20,10 @@ export class PreMatchMenu {
         <span>FIELD RECON // 14</span>
         <i></i>
       </div>
+      <div class="prematch-operative" aria-hidden="true">
+        <img src="/assets/operative-sable.png" alt="" />
+        <div class="operative-caption"><span>SABLE-1 // FIELD LEAD</span><small>RELAY STATION 14 // INSERTION READY</small></div>
+      </div>
       <div class="prematch-panel">
         <p class="menu-eyebrow">FIELD COMMAND // OPERATION SABLE</p>
         <h1 id="operation-title">Relay Station 14</h1>
@@ -70,6 +74,7 @@ export class PreMatchMenu {
     this.teamSizeSelect = teamSizeSelect;
     this.difficultySelect = difficultySelect;
     this.difficultySelect.value = initialDifficulty;
+    this.teamSizeSelect.value = '3';
     this.roleButtons = this.element.querySelectorAll<HTMLButtonElement>('[data-role]');
     this.roleButtons.forEach((button) => button.addEventListener('click', () => this.selectRole(button.dataset.role as TeamRole)));
     startButton.addEventListener('click', () => {

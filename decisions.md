@@ -53,3 +53,27 @@
 - Decision: Use generated materials and briefing imagery, plus lightweight Three.js geometry for muzzle flash, sway, and impact feedback.
 - Reason: These effects improve perceived realism while keeping draw cost and compatibility predictable on phone browsers.
 - Constraint: Keep renderer pixel ratio capped and reuse pooled impact effects instead of allocating particles every shot.
+
+## 2026-08-11 - Put a human lead in the opening briefing
+
+- Decision: Generate an original full-body desert operative cutout and place it in the Operation Sable briefing panel.
+- Reason: A visible field lead gives the player an immediate human anchor before the first-person camera opens.
+- Constraint: Use an original uniform and silhouette with no logos, copied characters, or branded equipment.
+
+## 2026-08-11 - Make the first operation playable immediately
+
+- Decision: Auto-issue the pistol, rifle, and knife, skip the blocking kit confirmation, and enter the first operation automatically.
+- Reason: A fresh player should reach movement and combat quickly instead of seeing an immediate failure or waiting behind a setup screen.
+- Constraint: Keep the buy menu and purchase handlers in place for a future loadout phase, but do not make them a prerequisite for the opening mission.
+
+## 2026-08-11 - Start with a staffed field
+
+- Decision: Default the squad to three operatives, keep multiple guards active, and extend the opening round to three minutes.
+- Reason: Several readable actors and a longer first combat window make the compound feel like an active battlefield while leaving room for stealth.
+- Constraint: Reuse the existing bot director and navigation system so field presence remains deterministic and mobile-friendly.
+
+## 2026-08-11 - Keep simulation progress independent from pointer lock
+
+- Decision: Let match timing and bot combat advance while pointer lock is unavailable.
+- Reason: Browsers and phones handle focus differently, and the player should not lose the operation before clicking the canvas or touching the controls.
+- Constraint: Pointer lock still improves desktop camera control, but it is now an input enhancement rather than a match-state gate.

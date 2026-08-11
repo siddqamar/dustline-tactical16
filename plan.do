@@ -57,3 +57,15 @@
 - [x] Complete `flow.md` with concise entry points, function calls, and execution flow.
 - [x] Update this checklist as each item is completed.
 - [x] Commit each focused stage with a descriptive message and bullet-point details.
+
+## Follow-up - playable opening and battlefield presence
+
+- [x] Generate and validate a full-body military operative asset with imagegen.
+- [x] Add the operative to the mission briefing so the opening has a visible human lead.
+- [x] Auto-issue the full kit and enter deployment after starting the first mission.
+- [x] Prevent pointer-lock or menu state from pausing the live mission unexpectedly.
+- [x] Default to a multi-person squad and make squadmates and guards arrive in the playable field.
+- [x] Extend the initial combat window so the first operation does not resolve before the player can engage.
+- [x] Add regression coverage for immediate playable start and multiple field combatants.
+- [x] Update `decisions.md` and `flow.md` with the new opening flow.
+- [x] Commit the opening-flow and character work separately from later polish.

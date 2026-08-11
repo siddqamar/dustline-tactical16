@@ -128,12 +128,13 @@ export class BotDirector {
   private getSpawnPosition(role: 'attackers' | 'defenders', index: number): THREE.Vector3 {
     const prefix = role === 'attackers' ? 'west' : 'east';
     const candidates = this.spawns.filter((spawn) => spawn.id.startsWith(prefix));
-    const base = candidates[index % Math.max(1, candidates.length)]?.position.clone()
+    const base = candidates[(role === 'defenders' ? 0 : index) % Math.max(1, candidates.length)]?.position.clone()
       ?? new THREE.Vector3(role === 'attackers' ? -29 : 29, 1.65, 0);
+    const inward = role === 'attackers' ? 1 : -1;
     const formationOffsets = [
       new THREE.Vector3(0, 0, 0),
-      new THREE.Vector3(role === 'attackers' ? -1.8 : 1.8, 0, -2.4),
-      new THREE.Vector3(role === 'attackers' ? -1.8 : 1.8, 0, 2.4),
+      new THREE.Vector3(inward * 1.8, 0, -2.4),
+      new THREE.Vector3(inward * 1.8, 0, 2.4),
       new THREE.Vector3(0, 0, -4.2),
       new THREE.Vector3(0, 0, 4.2),
     ];

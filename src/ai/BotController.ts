@@ -308,8 +308,8 @@ export class BotController {
   }
 
   private buildVisual(): void {
-    const uniformColor = this.squad === 'alpha' ? 0x394843 : 0x4b4039;
-    const accentColor = this.squad === 'alpha' ? 0x789c91 : 0xb77a58;
+    const uniformColor = this.squad === 'alpha' ? 0x766d59 : 0x4b5045;
+    const accentColor = this.squad === 'alpha' ? 0xc19b61 : 0xa8644c;
     const uniform = new THREE.MeshStandardMaterial({ color: uniformColor, roughness: 0.88, metalness: 0.04 });
     const armor = new THREE.MeshStandardMaterial({ color: 0x202827, roughness: 0.62, metalness: 0.24 });
     const accent = new THREE.MeshStandardMaterial({ color: accentColor, roughness: 0.65, metalness: 0.08 });
@@ -325,6 +325,15 @@ export class BotController {
     const vest = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.68, 0.34), armor);
     vest.position.set(0, 1.24, -0.03);
     this.addVisual(vest);
+
+    const backpack = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.62, 0.22), uniform);
+    backpack.position.set(0, 1.27, 0.25);
+    backpack.castShadow = true;
+    this.addVisual(backpack);
+
+    const radio = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.28, 0.08), accent);
+    radio.position.set(-0.36, 1.48, -0.1);
+    this.addVisual(radio);
 
     const chestPatch = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.14, 0.025), accent);
     chestPatch.position.set(0, 1.34, -0.215);

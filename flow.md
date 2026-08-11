@@ -24,10 +24,10 @@
 
 1. The setup menu calls `Game.startMatch()` with team size, guard difficulty, and insertion assignment.
 2. `MatchManager.start()` begins the first preparation phase.
-3. `Game.handleMatchSnapshot()` prepares the round, resets health and weapons, spawns squads, and opens the kit menu.
-4. The kit menu calls `Game.purchaseItem()` for armor, the signal override kit, or the rifle.
-5. Confirming the kit calls `MatchManager.finishBuyPhase()`, which moves the match into deployment.
-6. Deployment ends when the timer expires or the player begins input.
+3. `Game.handleMatchSnapshot()` prepares the round, resets health and weapons, spawns the player squad and guard squad, and issues the full field kit.
+4. The first buy snapshot is immediately passed to `MatchManager.finishBuyPhase()`, so the kit screen cannot block the first playable moment.
+5. `MatchManager` enters deployment and then live combat without requiring pointer lock to advance the simulation.
+6. The player can click the canvas for desktop look control or use the touch controls on a phone browser.
 7. The attacking operative carries the internal timed package state to a relay area and holds the interaction control.
 8. The HUD presents this internal state as caching intel, transmitting, overriding the cache, or recovering a dropped package.
 9. Elimination, timeout, cache override, or completed transmission is reported back to `MatchManager`.
