@@ -69,8 +69,8 @@ export class AudioManager {
   }
 
   private playWeaponFire(weapon: WeaponDefinition): void {
-    const pitch = weapon.category === 'sniper' ? 92 : weapon.category === 'rifle' ? 128 : 174;
-    const duration = weapon.category === 'sniper' ? 0.22 : 0.13;
+    const pitch = weapon.category === 'knife' ? 210 : weapon.category === 'rifle' ? 128 : 174;
+    const duration = weapon.category === 'knife' ? 0.08 : 0.13;
     this.playTone(pitch, duration, 'sawtooth', 0.35);
     this.playNoise(duration, 0.28, 500);
   }

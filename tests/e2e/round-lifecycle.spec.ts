@@ -20,7 +20,7 @@ test('waits in operation setup without starting hidden combat', async ({ page })
   await page.goto('/');
 
   await expect(page.locator('.prematch-menu')).toBeVisible();
-  await expect(page.locator('[data-start-operation]')).toHaveText('START OPERATION');
+  await expect(page.locator('[data-start-operation]')).toHaveText('BEGIN INSERTION');
   await expect(page.locator('.status-label')).toHaveText('OPERATION SETUP');
   await page.waitForTimeout(3_000);
   await expect(page.locator('.prematch-menu')).toBeVisible();
@@ -34,7 +34,7 @@ test('applies team size and role choices before opening the buy phase', async ({
   await page.locator('[data-start-operation]').click();
 
   await expect(page.locator('.buy-menu')).toBeVisible();
-  await expect(page.locator('[data-buy-role]')).toHaveText('WARDEN LOADOUT');
+  await expect(page.locator('[data-buy-role]')).toHaveText('OVERWATCH KIT');
   await expect(page.locator('.hud-alpha-alive')).toHaveText('4');
   await expect(page.locator('.hud-round-value')).toHaveText('BUY PHASE');
 });

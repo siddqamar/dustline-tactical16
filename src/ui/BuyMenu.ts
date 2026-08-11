@@ -1,6 +1,6 @@
 import type { TeamRole } from '../match/MatchTypes';
 
-export type BuyItemId = 'armor' | 'defuse-kit' | 'carbine' | 'battle-rifle' | 'marksman';
+export type BuyItemId = 'armor' | 'defuse-kit' | 'rifle';
 
 export interface BuyItem {
   readonly id: BuyItemId;
@@ -20,9 +20,7 @@ export interface BuyMenuState {
 export const BUY_ITEMS: readonly BuyItem[] = [
   { id: 'armor', label: 'Composite armor', description: 'Reduces incoming ballistic damage.', cost: 650, category: 'equipment' },
   { id: 'defuse-kit', label: 'Defuse kit', description: 'Cuts device neutralization time in half.', cost: 400, category: 'equipment' },
-  { id: 'carbine', label: 'C4 Carbine', description: 'Balanced automatic rifle for close and middle range.', cost: 2700, category: 'primary' },
-  { id: 'battle-rifle', label: 'BR-12 Ranger', description: 'Hard-hitting semi-automatic battle rifle.', cost: 3100, category: 'primary' },
-  { id: 'marksman', label: 'M12 Marksman', description: 'Precision rifle for long sightlines.', cost: 4750, category: 'primary' },
+  { id: 'rifle', label: 'AR-17 Field rifle', description: 'Reliable automatic rifle for compound lanes and open ground.', cost: 2700, category: 'primary' },
 ];
 
 export class BuyMenu {
@@ -41,7 +39,7 @@ export class BuyMenu {
     this.element.innerHTML = `
       <div class="buy-panel">
         <header class="buy-header">
-          <div><p>FIELD REQUISITIONS</p><h2 id="buy-title">Prepare loadout</h2></div>
+          <div><p>FIELD REQUISITIONS</p><h2 id="buy-title">Prepare kit</h2></div>
           <div class="buy-wallet"><span>AVAILABLE</span><strong data-buy-credits>$00000</strong></div>
         </header>
         <div class="buy-context"><span data-buy-role>BREACH LOADOUT</span><strong data-buy-timer>12</strong></div>
@@ -56,8 +54,8 @@ export class BuyMenu {
           `).join('')}
         </div>
         <footer class="buy-footer">
-          <span>Sidearm and ammunition are issued at no cost.</span>
-          <button class="menu-primary" type="button" data-deploy>CONFIRM LOADOUT</button>
+          <span>Pistol and knife are issued at no cost.</span>
+          <button class="menu-primary" type="button" data-deploy>CONFIRM KIT</button>
         </footer>
       </div>
     `;
@@ -96,7 +94,7 @@ export class BuyMenu {
     this.state = state;
     this.creditsValue.textContent = `$${state.credits.toString().padStart(5, '0')}`;
     this.timerValue.textContent = Math.ceil(state.secondsRemaining).toString().padStart(2, '0');
-    this.roleValue.textContent = state.role === 'attackers' ? 'BREACH LOADOUT' : 'WARDEN LOADOUT';
+    this.roleValue.textContent = state.role === 'attackers' ? 'INFILTRATION KIT' : 'OVERWATCH KIT';
     this.itemButtons.forEach((button) => {
       const item = BUY_ITEMS.find((candidate) => candidate.id === button.dataset.buyItem);
       if (!item) {

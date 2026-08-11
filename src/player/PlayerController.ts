@@ -20,6 +20,7 @@ export class PlayerController {
   private readonly upAxis = new THREE.Vector3(0, 1, 0);
   private yaw = 0;
   private pitch = 0;
+  private aiming = false;
   private enabled = true;
   private readonly spawnPosition = new THREE.Vector3();
   private spawnYaw: number;
@@ -57,10 +58,19 @@ export class PlayerController {
     return this.input.has('KeyE');
   }
 
+  public get isAiming(): boolean {
+    return this.aiming;
+  }
+
+  public setAiming(aiming: boolean): void {
+    this.aiming = aiming;
+  }
+
   public setEnabled(enabled: boolean): void {
     this.enabled = enabled;
     if (!enabled) {
       this.velocity.set(0, 0, 0);
+      this.aiming = false;
       this.input.clear();
     }
   }
@@ -72,6 +82,7 @@ export class PlayerController {
     this.position.copy(this.spawnPosition);
     this.yaw = this.spawnYaw;
     this.pitch = 0;
+    this.aiming = false;
     this.camera.position.copy(this.position);
     this.camera.rotation.set(this.pitch, this.yaw, 0);
   }
@@ -129,7 +140,8 @@ export class PlayerController {
       this.moveDirection.normalize();
     }
 
-    const speed = this.input.has('ShiftLeft') || this.input.has('ShiftRight') ? SPRINT_SPEED : WALK_SPEED;
+    const sprinting = this.input.has('ShiftLeft') || this.input.has('ShiftRight');
+    const speed = this.aiming ? WALK_SPEED * 0.68 : sprinting ? SPRINT_SPEED : WALK_SPEED;
     this.desiredVelocity.set(this.moveDirection.x * speed, 0, this.moveDirection.z * speed);
     this.desiredVelocity.applyAxisAngle(this.upAxis, this.yaw);
   }

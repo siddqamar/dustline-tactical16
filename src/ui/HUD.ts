@@ -51,7 +51,7 @@ export class HUD {
       </div>
       <div class="hud-identity"><span>CONTROL</span><strong class="hud-operative">ALPHA 1</strong><small class="hud-credits">$00800</small></div>
       <div class="hud-weapon">
-        <div class="hud-weapon-name">M9 VANGUARD</div>
+        <div class="hud-weapon-name">P9 SERVICE PISTOL</div>
         <div class="hud-ammo"><strong class="hud-ammo-value">15 / 60</strong><span>READY</span></div>
         <div class="hud-reload" hidden>RELOADING</div>
       </div>

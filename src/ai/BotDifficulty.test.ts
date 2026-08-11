@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { WEAPON_DEFINITIONS } from '../weapons/WeaponTypes';
 import { BOT_DIFFICULTIES } from './BotDifficulty';
 
-const BOT_WEAPON = WEAPON_DEFINITIONS[2]!;
+const BOT_WEAPON = WEAPON_DEFINITIONS.find((weapon) => weapon.id === 'rifle')!;
 
 describe('bot combat pacing', () => {
   it.each(['easy', 'medium'] as const)('keeps the first %s burst survivable', (difficulty) => {

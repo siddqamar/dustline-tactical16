@@ -127,6 +127,13 @@ body {
   height: 2.1rem;
   transform: translate(-50%, -50%);
   opacity: 0.58;
+  transition: width 180ms ease, height 180ms ease, opacity 180ms ease;
+}
+
+.game-overlay.is-aiming .game-reticle {
+  width: 0.85rem;
+  height: 0.85rem;
+  opacity: 0.86;
 }
 
 .game-reticle span,
@@ -276,6 +283,11 @@ body {
   font-weight: 700;
   letter-spacing: 0.14em;
   white-space: nowrap;
+}
+
+.game-overlay.is-aiming ~ .tactical-hud .hud-controls::after {
+  content: '  //  AIMING';
+  color: #d6b575;
 }
 
 .hud-controls span {

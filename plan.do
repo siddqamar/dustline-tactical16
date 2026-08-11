@@ -6,7 +6,7 @@
 - [x] Confirm rifle, pistol, and knife as the initial loadout.
 - [x] Support both stealth and direct combat.
 - [x] Treat desktop and mobile browsers as first-class targets.
-- [ ] Resolve whether the requested zoom includes tactical overview mode as well as aim zoom.
+- [x] Resolve the zoom request as smooth first-person aim zoom without a separate tactical camera.
 
 ## Baseline and branch
 
@@ -16,16 +16,16 @@
 
 ## Commit 1 - map and operation foundation
 
-- [ ] Replace the CS-style arena language with an original desert intelligence compound.
-- [ ] Add readable infiltration lanes, cover, buildings, towers, service roads, and extraction space.
-- [ ] Define one operation objective flow that supports stealth or firefight completion.
-- [ ] Add map rationale to `decisions.md`.
+- [x] Replace the CS-style arena language with an original desert intelligence compound.
+- [x] Add readable infiltration lanes, cover, buildings, towers, service roads, and extraction space.
+- [x] Define one operation objective flow that supports stealth or firefight completion.
+- [x] Add map rationale to `decisions.md`.
 
 ## Commit 2 - weapons and player feel
 
-- [ ] Rework the weapon set to rifle, pistol, and knife.
-- [ ] Add weapon-specific damage, range, recoil, fire cadence, and handling.
-- [ ] Add smooth aim zoom, FOV interpolation, weapon sway, recoil feedback, and knife range behavior.
+- [x] Rework the weapon set to rifle, pistol, and knife.
+- [x] Add weapon-specific damage, range, recoil, fire cadence, and handling.
+- [x] Add smooth aim zoom, FOV interpolation, weapon sway, recoil feedback, and knife range behavior.
 - [ ] Keep controls compatible with keyboard/mouse and touch.
 
 ## Commit 3 - guards, awareness, and objectives
@@ -44,7 +44,7 @@
 
 ## Commit 5 - realistic visual pass
 
-- [ ] Generate original raster assets with imagegen for military environment materials, atmosphere, and effects.
+- [x] Generate original raster assets with imagegen for military environment materials and atmosphere.
 - [ ] Improve lighting, shadows, fog, terrain detail, muzzle flashes, impact effects, and hit feedback.
 - [ ] Improve weapon presentation and the tactical HUD without copying branded game assets.
 - [ ] Keep asset sizes and rendering cost suitable for mobile browsers.

@@ -9,7 +9,7 @@ import type { SquadId } from '../match/MatchTypes';
 
 export type BotState = 'advance' | 'engage' | 'search' | 'dead' | 'controlled';
 
-const BOT_WEAPON = WEAPON_DEFINITIONS[2]!;
+const BOT_WEAPON = WEAPON_DEFINITIONS.find((weapon) => weapon.id === 'rifle') ?? WEAPON_DEFINITIONS[0]!;
 const GOAL_REPATH_DISTANCE = 4;
 
 export class BotController {

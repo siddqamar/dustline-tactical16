@@ -58,6 +58,7 @@ export class Game {
   private footstepRemaining = 0;
   private bombTickRemaining = 0;
   private fireHeld = false;
+  private aimHeld = false;
   private debugEnabled = false;
   private frameAccumulator = 0;
   private frameCount = 0;
@@ -70,7 +71,7 @@ export class Game {
     this.scene.background = new THREE.Color(CLEAR_COLOR);
     this.scene.fog = new THREE.FogExp2(0x6d5d4d, 0.009);
 
-    this.camera = new THREE.PerspectiveCamera(72, 1, 0.05, 220);
+    this.camera = new THREE.PerspectiveCamera(76, 1, 0.05, 220);
     this.camera.position.set(-29, 1.65, 0);
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
@@ -270,9 +271,15 @@ export class Game {
 
     const combatActive = this.match.isCombatActive;
     this.player.setEnabled(combatActive && !this.playerHealth.isDead && this.player.isPointerLocked);
+    this.player.setAiming(this.aimHeld && combatActive && !this.playerHealth.isDead);
     this.player.update(deltaSeconds);
     this.updateMovementAudio(deltaSeconds, combatActive);
-    this.weapons.update(deltaSeconds);
+    this.weapons.update(deltaSeconds, this.player.isAiming);
+    const targetFov = this.player.isAiming ? this.weapons.activeWeapon.adsFov : 76;
+    const fovBlend = 1 - Math.exp(-11 * deltaSeconds);
+    this.camera.fov = THREE.MathUtils.lerp(this.camera.fov, targetFov, fovBlend);
+    this.camera.updateProjectionMatrix();
+    this.overlay.classList.toggle('is-aiming', this.player.isAiming);
     if (this.fireHeld && combatActive && this.player.isPointerLocked && !this.playerHealth.isDead) {
       const shot = this.weapons.tryFire(this.player.isMoving);
       if (shot) {
@@ -513,7 +520,7 @@ export class Game {
     this.currentOperativeId = replacement.id;
     this.playerHealth.setCurrent(inheritedHealth);
     this.player.takeControl(replacement.position, replacement.yaw);
-    this.weapons.reset(['sidearm', 'carbine']);
+    this.weapons.reset(['sidearm', 'rifle', 'knife']);
     this.hasArmor = false;
     this.hasDefuseKit = false;
     this.hud.setArmor(false);
@@ -649,12 +656,16 @@ export class Game {
     this.audio.initialize();
     if (event.button === 0) {
       this.fireHeld = true;
+    } else if (event.button === 2) {
+      this.aimHeld = true;
     }
   };
 
   private readonly handlePointerUp = (event: PointerEvent): void => {
     if (event.button === 0) {
       this.fireHeld = false;
+    } else if (event.button === 2) {
+      this.aimHeld = false;
     }
   };
 
