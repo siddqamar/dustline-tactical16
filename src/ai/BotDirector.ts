@@ -45,7 +45,7 @@ export class BotDirector {
     }
   }
 
-  public update(deltaSeconds: number, human: HumanCombatant, active: boolean, goals: SquadGoals): void {
+  public update(deltaSeconds: number, human: HumanCombatant, active: boolean, goals: SquadGoals, canFire = true): void {
     this.bots.forEach((bot) => {
       if (bot.health.isDead && bot.state !== 'dead') {
         bot.markDead();
@@ -64,11 +64,16 @@ export class BotDirector {
       visibility: human.visibility,
     };
     const targets = humanTarget ? [...botTargets, humanTarget] : botTargets;
+    const designatedShooters = new Set(
+      (['alpha', 'bravo'] as const).flatMap((squad) => this.getLivingBots(squad)
+        .slice(0, this.profile.maxConcurrentAttackers)
+        .map((bot) => bot.id)),
+    );
     this.bots.forEach((bot, index) => {
       const enemies = targets.filter((target) => target.squad !== bot.squad);
       const squadGoals = goals[bot.squad];
       const goal = squadGoals[index % Math.max(1, squadGoals.length)] ?? this.navigation.nearestNode(bot.position).position;
-      bot.update(deltaSeconds, enemies, active, true, goal);
+      bot.update(deltaSeconds, enemies, active, canFire && designatedShooters.has(bot.id), goal);
     });
   }
 
@@ -83,6 +88,15 @@ export class BotDirector {
 
   public markDead(id: string): void {
     this.bots.find((candidate) => candidate.id === id)?.markDead();
+  }
+
+  public reinforceSquad(squad: SquadId, role: 'attackers' | 'defenders'): void {
+    this.bots.filter((bot) => bot.squad === squad).forEach((bot) => {
+      const index = Number(bot.id.split('-')[1] ?? '1') - 1;
+      const spawn = this.getSpawnPosition(role, index);
+      this.spawnPositions.set(bot.id, spawn.clone());
+      bot.reset(spawn);
+    });
   }
 
   public takeOverNearest(squad: SquadId, position: THREE.Vector3): BotController | null {
@@ -128,13 +142,13 @@ export class BotDirector {
   private getSpawnPosition(role: 'attackers' | 'defenders', index: number): THREE.Vector3 {
     const prefix = role === 'attackers' ? 'west' : 'east';
     const candidates = this.spawns.filter((spawn) => spawn.id.startsWith(prefix));
-    const base = candidates[(role === 'defenders' ? 0 : index) % Math.max(1, candidates.length)]?.position.clone()
+    const base = candidates[0]?.position.clone()
       ?? new THREE.Vector3(role === 'attackers' ? -29 : 29, 1.65, 0);
     const inward = role === 'attackers' ? 1 : -1;
     const formationOffsets = [
       new THREE.Vector3(0, 0, 0),
-      new THREE.Vector3(inward * 1.8, 0, -2.4),
-      new THREE.Vector3(inward * 1.8, 0, 2.4),
+      new THREE.Vector3(inward * 5.8, 0, -1.7),
+      new THREE.Vector3(inward * 5.8, 0, 1.7),
       new THREE.Vector3(0, 0, -4.2),
       new THREE.Vector3(0, 0, 4.2),
     ];

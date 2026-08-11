@@ -148,7 +148,7 @@ export class HUD {
       this.objectiveValue.textContent = `${snapshot.roles.alpha === 'attackers' ? 'INFILTRATION' : 'OVERWATCH'} KIT`;
     } else if (snapshot.phase === 'deployment') {
       this.roundValue.textContent = snapshot.awaitingPlayer ? 'CLICK TO DEPLOY' : `DEPLOY IN ${Math.ceil(snapshot.phaseRemaining)}`;
-      this.objectiveValue.textContent = 'POINTER LOCK REQUIRED';
+      this.objectiveValue.textContent = 'WASD ACTIVE // CLICK FIELD FOR MOUSE LOOK';
     } else if (snapshot.phase === 'live') {
       this.roundValue.textContent = 'LIVE COMBAT';
       this.objectiveValue.textContent = snapshot.roles.alpha === 'attackers' ? 'CARRY PACKAGE TO RELAY' : 'SECURE RELAY APPROACHES';

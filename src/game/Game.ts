@@ -20,9 +20,10 @@ import { MatchManager } from '../match/MatchManager';
 import type { MatchConfig, MatchPhase, MatchSnapshot, SquadId, TeamRole } from '../match/MatchTypes';
 import type { MapSpawn, ObjectiveArea } from '../world/WorldTypes';
 
-const CLEAR_COLOR = 0x211a15;
+const CLEAR_COLOR = 0x8298a5;
 const PLAYER_ID = 'alpha-1';
 const INTERACTION_RANGE = 2.2;
+const OPENING_FIRE_DELAY_SECONDS = 6;
 
 export class Game {
   private readonly camera: THREE.PerspectiveCamera;
@@ -69,11 +70,12 @@ export class Game {
   private preparedRound = 0;
   private settledRound = 0;
   private lastPhase: MatchPhase = 'setup';
+  private combatElapsed = 0;
 
   public constructor(private readonly root: HTMLElement) {
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(CLEAR_COLOR);
-    this.scene.fog = new THREE.FogExp2(0x6d5d4d, 0.009);
+    this.scene.fog = new THREE.FogExp2(0xc0ad8d, 0.0065);
 
     this.camera = new THREE.PerspectiveCamera(76, 1, 0.05, 220);
     this.camera.position.set(-29, 1.65, 0);
@@ -185,6 +187,7 @@ export class Game {
         <span><strong>OPERATION SABLE</strong><small>RELAY STATION 14 // FIELD LINK</small></span>
       </div>
       <div class="game-status" data-game-status="setup"><span class="status-dot"></span><span class="status-label">OPERATION SETUP</span></div>
+      <div class="game-input-hint"><strong>FIELD CONTROL ACTIVE</strong><span>WASD TO MOVE // CLICK FIELD TO LOOK AND FIRE</span></div>
       <div class="game-reticle" aria-hidden="true"><span></span><span></span><span></span><span></span><i></i></div>
       <div class="game-vignette" aria-hidden="true"></div>
     `;
@@ -198,8 +201,8 @@ export class Game {
         side: THREE.BackSide,
         depthWrite: false,
         uniforms: {
-          horizonColor: { value: new THREE.Color(0xd0a56c) },
-          zenithColor: { value: new THREE.Color(0x392b26) },
+          horizonColor: { value: new THREE.Color(0xd8c39e) },
+          zenithColor: { value: new THREE.Color(0x668ba8) },
         },
         vertexShader: 'varying vec3 vWorldPosition; void main(){ vec4 worldPosition = modelMatrix * vec4(position, 1.0); vWorldPosition = worldPosition.xyz; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
         fragmentShader: 'uniform vec3 horizonColor; uniform vec3 zenithColor; varying vec3 vWorldPosition; void main(){ float h = clamp(normalize(vWorldPosition).y * 0.72 + 0.28, 0.0, 1.0); gl_FragColor = vec4(mix(horizonColor, zenithColor, pow(h, 0.7)), 1.0); }',
@@ -207,13 +210,13 @@ export class Game {
     );
     this.scene.add(sky);
 
-    const hemisphere = new THREE.HemisphereLight(0xf2c38a, 0x554334, 2.2);
+    const hemisphere = new THREE.HemisphereLight(0xe8f2ff, 0x6e543e, 1.8);
     this.scene.add(hemisphere);
 
-    const ambient = new THREE.AmbientLight(0xb89b78, 0.68);
+    const ambient = new THREE.AmbientLight(0xc4cdd0, 0.72);
     this.scene.add(ambient);
 
-    const sun = new THREE.DirectionalLight(0xffc989, 4.3);
+    const sun = new THREE.DirectionalLight(0xffdfad, 3.6);
     sun.position.set(-24, 34, 18);
     sun.castShadow = true;
     sun.shadow.mapSize.set(2048, 2048);
@@ -285,9 +288,13 @@ export class Game {
     }
 
     const combatActive = this.match.isCombatActive;
-    this.player.setEnabled(combatActive && !this.playerHealth.isDead && this.player.isPointerLocked);
-    this.player.setAiming((this.aimHeld || this.mobileAimHeld) && combatActive && !this.playerHealth.isDead);
+    const playerActive = combatActive || this.match.current.phase === 'deployment';
+    this.combatElapsed = combatActive ? this.combatElapsed + deltaSeconds : 0;
+    this.player.setEnabled(playerActive && !this.playerHealth.isDead);
+    this.player.setAiming((this.aimHeld || this.mobileAimHeld) && playerActive && !this.playerHealth.isDead);
     this.player.update(deltaSeconds);
+    this.canvas.dataset.playerPosition = `${this.player.position.x.toFixed(2)},${this.player.position.z.toFixed(2)}`;
+    this.overlay.classList.toggle('needs-control', playerActive && !this.player.isPointerLocked);
     this.updateMovementAudio(deltaSeconds, combatActive);
     this.weapons.update(deltaSeconds, this.player.isAiming, this.player.isMoving);
     const targetFov = this.player.isAiming ? this.weapons.activeWeapon.adsFov : 76;
@@ -295,7 +302,7 @@ export class Game {
     this.camera.fov = THREE.MathUtils.lerp(this.camera.fov, targetFov, fovBlend);
     this.camera.updateProjectionMatrix();
     this.overlay.classList.toggle('is-aiming', this.player.isAiming);
-    if ((this.fireHeld || this.mobileFireHeld) && combatActive && this.player.isPointerLocked && !this.playerHealth.isDead) {
+    if ((this.fireHeld || this.mobileFireHeld) && combatActive && !this.playerHealth.isDead) {
       const shot = this.weapons.tryFire(this.player.isMoving);
       if (shot) {
         this.combat.fire(shot, this.currentOperativeId, 'alpha');
@@ -310,7 +317,7 @@ export class Game {
       health: this.playerHealth,
       damageMultiplier: this.hasArmor ? 0.72 : 1,
       visibility: this.player.isMoving ? 1 : this.player.isAiming ? 0.68 : 0.46,
-    }, combatActive, this.createSquadGoals());
+    }, combatActive, this.createSquadGoals(), this.combatElapsed >= OPENING_FIRE_DELAY_SECONDS);
     if (this.playerHealth.current < healthBeforeBots) {
       this.hud.showDamage();
     }
@@ -383,6 +390,7 @@ export class Game {
       return;
     }
     this.preparedRound = snapshot.roundNumber;
+    this.combatElapsed = 0;
     this.currentOperativeId = PLAYER_ID;
     this.playerHealth.reset();
     this.hasArmor = false;
@@ -559,9 +567,19 @@ export class Game {
     const alphaAlive = bots.aliveCount('alpha', !this.playerHealth.isDead);
     const bravoAlive = bots.aliveCount('bravo', false);
     if (alphaAlive === 0) {
-      this.match.reportSquadEliminated('alpha');
+      this.currentOperativeId = PLAYER_ID;
+      this.playerHealth.reset();
+      this.player.deploy(this.spawnForRole(this.match.roleFor('alpha')));
+      this.weapons.reset(['sidearm', 'rifle', 'knife']);
+      this.hasArmor = false;
+      this.hasDefuseKit = false;
+      bots.reinforceSquad('alpha', this.match.roleFor('alpha'));
+      this.hud.setArmor(false);
+      this.hud.setOperative(this.currentOperativeId);
+      this.hud.announce('SABLE REINFORCEMENTS // FIELD CONTROL RESTORED', 3.2);
     } else if (bravoAlive === 0) {
-      this.match.reportSquadEliminated('bravo');
+      bots.reinforceSquad('bravo', this.match.roleFor('bravo'));
+      this.hud.announce('HOSTILE REINFORCEMENTS ENTERING THE COMPOUND', 3.2);
     }
   }
 
@@ -611,7 +629,7 @@ export class Game {
 
   private updateMovementAudio(deltaSeconds: number, combatActive: boolean): void {
     this.footstepRemaining = Math.max(0, this.footstepRemaining - deltaSeconds);
-    if (combatActive && this.player.isMoving && this.player.isPointerLocked && this.footstepRemaining === 0) {
+    if (combatActive && this.player.isMoving && this.footstepRemaining === 0) {
       this.audio.playFootstep();
       this.footstepRemaining = 0.42;
     }

@@ -7,7 +7,7 @@ export const MATCH_TIMING = {
   buySeconds: 12,
   deploymentSeconds: 3,
   resolutionSeconds: 5,
-  roundSeconds: 180,
+  roundSeconds: 300,
 } as const;
 
 const PLAYER_SQUAD: SquadId = 'alpha';

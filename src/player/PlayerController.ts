@@ -197,7 +197,7 @@ export class PlayerController {
   }
 
   private readonly handleKeyDown = (event: KeyboardEvent): void => {
-    if (!this.enabled || !this.isPointerLocked) {
+    if (!this.enabled) {
       return;
     }
 

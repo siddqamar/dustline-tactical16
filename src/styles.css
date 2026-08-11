@@ -111,6 +111,37 @@ body {
   letter-spacing: 0.16em;
 }
 
+.game-input-hint {
+  position: absolute;
+  top: 18%;
+  left: 50%;
+  display: grid;
+  gap: 0.3rem;
+  min-width: min(24rem, 80vw);
+  padding: 0.72rem 1rem;
+  border: 1px solid rgb(205 214 160 / 35%);
+  border-left: 3px solid #ccd78a;
+  background: linear-gradient(90deg, rgb(10 15 15 / 88%), rgb(10 15 15 / 58%));
+  color: #edf0d5;
+  font: 800 0.62rem/1.15 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: 0.16em;
+  opacity: 0;
+  text-align: center;
+  transform: translate(-50%, -0.6rem);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.game-input-hint span {
+  color: rgb(232 237 204 / 66%);
+  font-size: 0.48rem;
+  letter-spacing: 0.12em;
+}
+
+.game-overlay.needs-control .game-input-hint {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
 .status-dot {
   width: 0.42rem;
   height: 0.42rem;

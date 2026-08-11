@@ -39,6 +39,40 @@ test('starts a staffed field operation with the selected squad size', async ({ p
   await expect(page.locator('.hud-round-value')).toHaveText('LIVE COMBAT', { timeout: 8_000 });
 });
 
+test('lets the player move as soon as live combat starts', async ({ page }) => {
+  await startOperation(page);
+  const canvas = page.locator('.game-canvas');
+  const startPosition = await canvas.getAttribute('data-player-position');
+
+  await page.keyboard.down('KeyW');
+  await page.waitForTimeout(700);
+  await page.keyboard.up('KeyW');
+
+  await expect(canvas).not.toHaveAttribute('data-player-position', startPosition ?? '');
+});
+
+test('lets the player fire before pointer lock is established', async ({ page }) => {
+  await startOperation(page);
+  const ammo = page.locator('.hud-ammo-value');
+  await expect(ammo).toHaveText('15 / 60');
+
+  await page.mouse.move(480, 270);
+  await page.mouse.down();
+  await page.waitForTimeout(250);
+  await page.mouse.up();
+
+  expect(Number((await ammo.textContent())?.split('/')[0]?.trim())).toBeLessThan(15);
+});
+
+test('keeps the field operation active through the opening firefight', async ({ page }) => {
+  await startOperation(page, '3', 'easy');
+  await page.waitForTimeout(15_000);
+
+  await expect(page.locator('.hud-round-value')).toHaveText('LIVE COMBAT');
+  expect(Number(await page.locator('.hud-alpha-alive').textContent())).toBeGreaterThan(0);
+  expect(Number(await page.locator('.hud-bravo-alive').textContent())).toBeGreaterThan(0);
+});
+
 test('issues the full kit before the opening combat window', async ({ page }) => {
   await startOperation(page);
   await expect(page.locator('.hud-weapon-name')).toHaveText('P9 SERVICE PISTOL');
