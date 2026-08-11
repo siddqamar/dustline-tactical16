@@ -60,6 +60,6 @@ test('keeps the controlled operative alive through the opening engagement window
   await page.waitForTimeout(6_000);
 
   expect(Number(await page.locator('.hud-health-value').textContent())).toBeGreaterThan(0);
-  await expect(page.locator('.hud-operative')).toContainText('ALPHA');
+  await expect(page.locator('.hud-operative')).toContainText('SABLE');
   await expect(page.locator('.hud-round-value')).not.toHaveText('OPERATION FAILED');
 });

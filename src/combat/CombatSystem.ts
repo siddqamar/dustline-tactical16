@@ -23,6 +23,7 @@ export interface CombatTarget {
   readonly zone: HitZone;
   readonly multiplier: number;
   readonly health: Health;
+  readonly visibility?: number;
 }
 
 export interface ShotResult {

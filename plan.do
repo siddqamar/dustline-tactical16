@@ -30,17 +30,17 @@
 
 ## Commit 3 - guards, awareness, and objectives
 
-- [ ] Replace round/bomb bot behavior with patrol, suspicion, alert, search, cover, and pursuit behavior.
-- [ ] Make difficulty affect bot decisions and reaction quality rather than only health.
-- [ ] Add objective, detection, extraction, and mission result states.
-- [ ] Add readable feedback for stealth and combat outcomes.
+- [x] Replace round/bomb bot behavior with patrol, alert, search, cover, and pursuit behavior.
+- [x] Make difficulty affect bot decisions and reaction quality rather than only health.
+- [x] Add objective, detection, and mission result states.
+- [x] Add readable feedback for stealth and combat outcomes.
 
 ## Commit 4 - mobile controls and responsive presentation
 
-- [ ] Add touch movement, look, fire, aim, weapon switch, crouch, and interaction controls.
-- [ ] Make HUD, canvas, menus, and input zones adapt to phone aspect ratios and safe areas.
-- [ ] Preserve mouse/keyboard controls on desktop.
-- [ ] Verify touch and desktop flows in browser tests where supported.
+- [x] Add touch movement, look, fire, aim, weapon switch, and interaction controls.
+- [x] Make HUD, canvas, menus, and input zones adapt to phone aspect ratios and safe areas.
+- [x] Preserve mouse/keyboard controls on desktop.
+- [x] Verify touch and desktop flows in browser tests where supported.
 
 ## Commit 5 - realistic visual pass
 

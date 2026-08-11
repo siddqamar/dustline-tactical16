@@ -18,6 +18,7 @@ export interface HumanCombatant {
   readonly position: THREE.Vector3;
   readonly health: Health;
   readonly damageMultiplier: number;
+  readonly visibility: number;
 }
 
 export class BotDirector {
@@ -60,6 +61,7 @@ export class BotDirector {
       zone: 'body',
       multiplier: human.damageMultiplier,
       health: human.health,
+      visibility: human.visibility,
     };
     const targets = humanTarget ? [...botTargets, humanTarget] : botTargets;
     this.bots.forEach((bot, index) => {

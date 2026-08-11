@@ -19,7 +19,7 @@ export class PreMatchMenu {
       <div class="prematch-panel">
         <p class="menu-eyebrow">FIELD COMMAND // OPERATION SABLE</p>
         <h1 id="operation-title">Relay Station 14</h1>
-        <p class="menu-brief">Infiltrate the desert relay station, recover the intelligence package, and reach extraction. Move quietly or force a path through the compound.</p>
+        <p class="menu-brief">Infiltrate the desert relay station, cache the intelligence package, and hold the relay through transmission. Move quietly or force a path through the compound.</p>
         <div class="menu-grid">
           <label class="menu-field">
             <span>Squad strength</span>

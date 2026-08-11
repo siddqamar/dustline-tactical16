@@ -38,9 +38,9 @@ export class HUD {
     this.element.className = 'tactical-hud';
     this.element.innerHTML = `
       <div class="hud-scoreboard">
-        <div class="hud-team hud-team-alpha"><span>ALPHA</span><strong class="hud-alpha-score">0</strong><i class="hud-alpha-alive">1</i></div>
+        <div class="hud-team hud-team-alpha"><span>FIELD</span><strong class="hud-alpha-score">0</strong><i class="hud-alpha-alive">1</i></div>
         <div class="hud-match-clock"><small class="hud-round-number">ROUND 01</small><strong class="hud-timer">01:30</strong></div>
-        <div class="hud-team hud-team-bravo"><i class="hud-bravo-alive">1</i><strong class="hud-bravo-score">0</strong><span>BRAVO</span></div>
+        <div class="hud-team hud-team-bravo"><i class="hud-bravo-alive">1</i><strong class="hud-bravo-score">0</strong><span>GUARD</span></div>
       </div>
       <div class="hud-round"><strong class="hud-round-value">OPERATION SETUP</strong><span class="hud-objective">AWAITING ORDERS</span></div>
       <div class="hud-controls"><span>WASD</span> MOVE <span>SHIFT</span> SPRINT <span>LMB</span> FIRE <span>E</span> INTERACT <span>R</span> RELOAD <span>1-5</span> WEAPONS</div>
@@ -145,19 +145,25 @@ export class HUD {
 
     if (snapshot.phase === 'buy') {
       this.roundValue.textContent = 'BUY PHASE';
-      this.objectiveValue.textContent = `${snapshot.roles.alpha === 'attackers' ? 'BREACH' : 'WARDEN'} ASSIGNMENT`;
+      this.objectiveValue.textContent = `${snapshot.roles.alpha === 'attackers' ? 'INFILTRATION' : 'OVERWATCH'} KIT`;
     } else if (snapshot.phase === 'deployment') {
       this.roundValue.textContent = snapshot.awaitingPlayer ? 'CLICK TO DEPLOY' : `DEPLOY IN ${Math.ceil(snapshot.phaseRemaining)}`;
       this.objectiveValue.textContent = 'POINTER LOCK REQUIRED';
     } else if (snapshot.phase === 'live') {
       this.roundValue.textContent = 'LIVE COMBAT';
-      this.objectiveValue.textContent = snapshot.roles.alpha === 'attackers' ? 'PLANT THE DEVICE' : 'DEFEND BOTH SITES';
+      this.objectiveValue.textContent = snapshot.roles.alpha === 'attackers' ? 'CARRY PACKAGE TO RELAY' : 'SECURE RELAY APPROACHES';
     } else if (snapshot.phase === 'planted') {
-      this.roundValue.textContent = 'DEVICE ARMED';
-      this.objectiveValue.textContent = snapshot.roles.alpha === 'attackers' ? 'DEFEND THE DEVICE' : 'DEFUSE THE DEVICE';
+      this.roundValue.textContent = 'TRANSMISSION ACTIVE';
+      this.objectiveValue.textContent = snapshot.roles.alpha === 'attackers' ? 'PROTECT THE CACHE' : 'OVERRIDE THE CACHE';
     } else if (snapshot.phase === 'round-end') {
       this.roundValue.textContent = snapshot.roundWinner === snapshot.playerSquad ? 'ROUND SECURED' : 'ROUND LOST';
-      this.objectiveValue.textContent = (snapshot.roundEndReason ?? 'resolved').replace('-', ' ').toUpperCase();
+      const reasonLabels: Record<string, string> = {
+        elimination: 'GUARD SWEEP',
+        timeout: 'TRANSMISSION LOST',
+        defused: 'CACHE OVERRIDDEN',
+        exploded: 'TRANSMISSION COMPLETE',
+      };
+      this.objectiveValue.textContent = reasonLabels[snapshot.roundEndReason ?? ''] ?? 'MISSION RESOLVED';
     } else if (snapshot.phase === 'match-end') {
       this.roundValue.textContent = snapshot.matchWinner === snapshot.playerSquad ? 'OPERATION COMPLETE' : 'OPERATION FAILED';
       this.objectiveValue.textContent = 'PRESS ENTER FOR NEW OPERATION';
@@ -166,13 +172,14 @@ export class HUD {
 
   public setBomb(snapshot: BombSnapshot): void {
     if (snapshot.state === 'planting') {
-      this.objectiveValue.textContent = `ARMING ${Math.round(snapshot.actionProgress * 100)}%`;
+      this.objectiveValue.textContent = `CACHING INTEL ${Math.round(snapshot.actionProgress * 100)}%`;
     } else if (snapshot.state === 'defusing') {
-      this.objectiveValue.textContent = `DEFUSING ${Math.round(snapshot.actionProgress * 100)}%`;
+      this.objectiveValue.textContent = `OVERRIDING CACHE ${Math.round(snapshot.actionProgress * 100)}%`;
     } else if (snapshot.state === 'planted') {
       this.timerValue.textContent = this.formatTime(snapshot.fuseRemaining);
+      this.objectiveValue.textContent = 'TRANSMISSION COUNTDOWN';
     } else if (snapshot.state === 'dropped') {
-      this.objectiveValue.textContent = 'DEVICE DROPPED';
+      this.objectiveValue.textContent = 'PACKAGE DROPPED';
     }
   }
 
@@ -187,7 +194,8 @@ export class HUD {
 
   public setOperative(id: string): void {
     this.currentOperativeId = id;
-    this.operativeValue.textContent = id.replace('-', ' ').toUpperCase();
+    const [squad, index] = id.split('-');
+    this.operativeValue.textContent = squad === 'alpha' ? `SABLE ${index ?? '1'}` : `HOSTILE ${index ?? '1'}`;
   }
 
   public setInteraction(message: string | null): void {

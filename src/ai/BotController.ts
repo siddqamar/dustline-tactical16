@@ -7,7 +7,7 @@ import type { CoverPoint } from '../world/WorldTypes';
 import type { BotDifficultyProfile } from './BotDifficulty';
 import type { SquadId } from '../match/MatchTypes';
 
-export type BotState = 'advance' | 'engage' | 'search' | 'dead' | 'controlled';
+export type BotState = 'patrol' | 'alert' | 'engage' | 'search' | 'dead' | 'controlled';
 
 const BOT_WEAPON = WEAPON_DEFINITIONS.find((weapon) => weapon.id === 'rifle') ?? WEAPON_DEFINITIONS[0]!;
 const GOAL_REPATH_DISTANCE = 4;
@@ -16,7 +16,7 @@ export class BotController {
   public readonly position: THREE.Vector3;
   public readonly root = new THREE.Group();
   public readonly health = new Health(100);
-  public state: BotState = 'advance';
+  public state: BotState = 'patrol';
 
   private readonly movement = new THREE.Vector3();
   private readonly targetPosition = new THREE.Vector3();
@@ -101,7 +101,7 @@ export class BotController {
 
   public reset(spawn: THREE.Vector3): void {
     this.position.copy(spawn);
-    this.state = 'advance';
+      this.state = 'patrol';
     this.memoryRemaining = 0;
     this.focusedTargetId = null;
     this.targetVisible = false;
@@ -164,14 +164,18 @@ export class BotController {
   private updatePerception(enemies: readonly CombatTarget[]): void {
     const previousTarget = this.focusedTargetId;
     const visibleTargets = enemies
-      .filter((enemy) => !enemy.health.isDead && this.position.distanceToSquared(enemy.position) < this.profile.perceptionRange * this.profile.perceptionRange)
+      .filter((enemy) => {
+        const visibility = THREE.MathUtils.clamp(enemy.visibility ?? 1, 0.35, 1);
+        const detectableRange = this.profile.perceptionRange * THREE.MathUtils.lerp(0.56, 1, visibility);
+        return !enemy.health.isDead && this.position.distanceToSquared(enemy.position) < detectableRange * detectableRange;
+      })
       .filter((enemy) => this.navigation.canSee(this.position, enemy.position))
       .sort((left, right) => this.position.distanceToSquared(left.position) - this.position.distanceToSquared(right.position));
     const visibleTarget = visibleTargets[0];
     if (visibleTarget) {
       this.focusedTargetId = visibleTarget.ownerId;
       this.targetVisible = true;
-      this.state = 'engage';
+      this.state = this.reactionRemaining > 0 ? 'alert' : 'engage';
       this.memoryRemaining = this.profile.targetMemory;
       this.coverSelected = false;
       if (previousTarget !== visibleTarget.ownerId) {
@@ -192,7 +196,7 @@ export class BotController {
     }
 
     this.focusedTargetId = null;
-    this.state = 'advance';
+      this.state = 'patrol';
     this.coverSelected = false;
   }
 

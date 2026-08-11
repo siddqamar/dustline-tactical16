@@ -19,7 +19,7 @@ export interface BuyMenuState {
 
 export const BUY_ITEMS: readonly BuyItem[] = [
   { id: 'armor', label: 'Composite armor', description: 'Reduces incoming ballistic damage.', cost: 650, category: 'equipment' },
-  { id: 'defuse-kit', label: 'Defuse kit', description: 'Cuts device neutralization time in half.', cost: 400, category: 'equipment' },
+  { id: 'defuse-kit', label: 'Signal override kit', description: 'Cuts relay cache shutdown time in half.', cost: 400, category: 'equipment' },
   { id: 'rifle', label: 'AR-17 Field rifle', description: 'Reliable automatic rifle for compound lanes and open ground.', cost: 2700, category: 'primary' },
 ];
 
@@ -42,7 +42,7 @@ export class BuyMenu {
           <div><p>FIELD REQUISITIONS</p><h2 id="buy-title">Prepare kit</h2></div>
           <div class="buy-wallet"><span>AVAILABLE</span><strong data-buy-credits>$00000</strong></div>
         </header>
-        <div class="buy-context"><span data-buy-role>BREACH LOADOUT</span><strong data-buy-timer>12</strong></div>
+        <div class="buy-context"><span data-buy-role>INFILTRATION KIT</span><strong data-buy-timer>12</strong></div>
         <div class="buy-grid">
           ${BUY_ITEMS.map((item) => `
             <button class="buy-item" type="button" data-buy-item="${item.id}">

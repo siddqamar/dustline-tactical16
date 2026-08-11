@@ -29,3 +29,21 @@
 - Decision: Use right mouse or an equivalent future touch control for smooth aim-down-sights FOV changes.
 - Reason: The request calls for a real-game zoom feel, and continuous first-person aiming supports both stealth observation and direct combat without breaking immersion.
 - Constraint: Camera FOV, movement speed, reticle scale, and weapon pose transition together instead of snapping independently.
+
+## 2026-08-11 - Make guard awareness respond to player signature
+
+- Decision: Give guards patrol, alert, engage, and search states, with quieter detection for a stationary or aiming player.
+- Reason: Stealth needs to change the outcome of play, not only change the color of the HUD.
+- Constraint: Direct combat remains available, and difficulty still controls perception, reaction, accuracy, and cover behavior.
+
+## 2026-08-11 - Use pointer-based touch controls
+
+- Decision: Add a virtual movement stick, right-side look zone, hold-to-fire, hold-to-aim, interaction, reload, and weapon buttons.
+- Reason: Pointer Events provide one input model that works on phone browsers and remains compatible with mouse controls.
+- Constraint: Touch controls are rendered only for coarse-pointer devices and are hidden during menus to keep mission setup readable.
+
+## 2026-08-11 - Reframe the device objective as an intelligence cache
+
+- Decision: Keep the existing timed relay interaction internally, but present it as caching an intelligence package and completing a transmission.
+- Reason: This preserves the tested round-resolution behavior while moving the player-facing objective away from bomb-site language.
+- Constraint: The internal state names remain stable for now, so the next objective-system pass can be isolated and tested separately.

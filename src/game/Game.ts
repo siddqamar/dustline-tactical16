@@ -9,6 +9,7 @@ import { Health } from '../combat/DamageSystem';
 import { HUD } from '../ui/HUD';
 import { PreMatchMenu } from '../ui/PreMatchMenu';
 import { BuyMenu, type BuyItem, type BuyItemId } from '../ui/BuyMenu';
+import { MobileControls } from '../ui/MobileControls';
 import { Navigation } from '../ai/Navigation';
 import { BotDirector, type SquadGoals } from '../ai/BotDirector';
 import { getBotDifficulty } from '../ai/BotDifficulty';
@@ -47,6 +48,7 @@ export class Game {
   private readonly statusLabel: HTMLElement;
   private readonly preMatchMenu: PreMatchMenu;
   private readonly buyMenu: BuyMenu;
+  private readonly mobileControls: MobileControls;
   private economy = new EconomySystem();
   private bots: BotDirector | null = null;
   private config: MatchConfig | null = null;
@@ -59,6 +61,8 @@ export class Game {
   private bombTickRemaining = 0;
   private fireHeld = false;
   private aimHeld = false;
+  private mobileFireHeld = false;
+  private mobileAimHeld = false;
   private debugEnabled = false;
   private frameAccumulator = 0;
   private frameCount = 0;
@@ -100,6 +104,16 @@ export class Game {
     this.combat = new CombatSystem(this.scene, this.camera);
     this.bombDevice = new BombDevice(this.scene);
     this.hud = new HUD(this.weapons);
+    this.mobileControls = new MobileControls({
+      onMove: (x, y) => this.player.setTouchMove(x, y),
+      onLook: (deltaX, deltaY) => this.player.applyTouchLook(deltaX, deltaY),
+      onFire: (active) => { this.mobileFireHeld = active; },
+      onAim: (active) => { this.mobileAimHeld = active; },
+      onInteract: (active) => this.player.setTouchInteracting(active),
+      onReload: () => { this.weapons.startReload(); },
+      onWeapon: (index) => { this.weapons.switchTo(index); },
+    });
+    this.player.setTouchMode(this.mobileControls.isTouchDevice);
     this.selectedSite = this.map.objectives[0] ?? { id: 'alpha', position: new THREE.Vector3(-22, 0.06, -22), radius: 5.2 };
 
     this.preMatchMenu = new PreMatchMenu(this.startMatch, getBotDifficulty(new URLSearchParams(window.location.search).get('difficulty')));
@@ -147,11 +161,12 @@ export class Game {
   public stop(): void {
     this.loop.stop();
     this.clock.stop();
+    this.mobileControls.dispose();
     this.audio.dispose();
   }
 
   private mount(): void {
-    this.root.replaceChildren(this.canvas, this.overlay, this.hud.element, this.buyMenu.element, this.preMatchMenu.element, this.debugElement);
+    this.root.replaceChildren(this.canvas, this.overlay, this.hud.element, this.mobileControls.element, this.buyMenu.element, this.preMatchMenu.element, this.debugElement);
     window.addEventListener('resize', this.handleResize, { passive: true });
     window.addEventListener('keydown', this.handleKeyDown);
     this.canvas.addEventListener('pointerdown', this.handlePointerDown);
@@ -271,7 +286,7 @@ export class Game {
 
     const combatActive = this.match.isCombatActive;
     this.player.setEnabled(combatActive && !this.playerHealth.isDead && this.player.isPointerLocked);
-    this.player.setAiming(this.aimHeld && combatActive && !this.playerHealth.isDead);
+    this.player.setAiming((this.aimHeld || this.mobileAimHeld) && combatActive && !this.playerHealth.isDead);
     this.player.update(deltaSeconds);
     this.updateMovementAudio(deltaSeconds, combatActive);
     this.weapons.update(deltaSeconds, this.player.isAiming);
@@ -280,7 +295,7 @@ export class Game {
     this.camera.fov = THREE.MathUtils.lerp(this.camera.fov, targetFov, fovBlend);
     this.camera.updateProjectionMatrix();
     this.overlay.classList.toggle('is-aiming', this.player.isAiming);
-    if (this.fireHeld && combatActive && this.player.isPointerLocked && !this.playerHealth.isDead) {
+    if ((this.fireHeld || this.mobileFireHeld) && combatActive && this.player.isPointerLocked && !this.playerHealth.isDead) {
       const shot = this.weapons.tryFire(this.player.isMoving);
       if (shot) {
         this.combat.fire(shot, this.currentOperativeId, 'alpha');
@@ -294,6 +309,7 @@ export class Game {
       position: this.player.position,
       health: this.playerHealth,
       damageMultiplier: this.hasArmor ? 0.72 : 1,
+      visibility: this.player.isMoving ? 1 : this.player.isAiming ? 0.68 : 0.46,
     }, combatActive, this.createSquadGoals());
     if (this.playerHealth.current < healthBeforeBots) {
       this.hud.showDamage();
@@ -317,6 +333,11 @@ export class Game {
 
   private readonly handleMatchSnapshot = (snapshot: MatchSnapshot): void => {
     this.hud.setMatch(snapshot);
+    if (snapshot.phase === 'deployment' || snapshot.phase === 'live' || snapshot.phase === 'planted') {
+      this.mobileControls.show();
+    } else {
+      this.mobileControls.hide();
+    }
     this.setStatus(snapshot.awaitingPlayer ? 'awaiting-player' : snapshot.phase === 'setup' ? 'operation-setup' : snapshot.phase);
     if ((snapshot.phase === 'buy' || snapshot.phase === 'round-end' || snapshot.phase === 'match-end') && this.player.isPointerLocked) {
       document.exitPointerLock();
@@ -429,7 +450,7 @@ export class Game {
         const site = this.siteAt(carrierPosition);
         if (site && this.match.roleFor(this.squadForOperative(snapshot.carrierId)) === 'attackers') {
           if (snapshot.carrierId === this.currentOperativeId) {
-            this.hud.setInteraction(this.player.isInteracting ? 'HOLD E // ARMING DEVICE' : 'HOLD E // PLANT DEVICE');
+            this.hud.setInteraction(this.player.isInteracting ? 'HOLD E // CACHING PACKAGE' : 'HOLD E // CACHE PACKAGE');
             if (this.player.isInteracting) {
               this.bomb.beginPlant(snapshot.carrierId, site.id);
             }
@@ -470,7 +491,7 @@ export class Game {
     const bombPosition = new THREE.Vector3(this.bomb.current.position.x, 1.65, this.bomb.current.position.z);
     const attackerSquad = this.match.squadFor('attackers');
     if (attackerSquad === 'alpha' && !this.playerHealth.isDead && this.withinArea(this.player.position, bombPosition, INTERACTION_RANGE)) {
-      this.hud.setInteraction('PRESS E // RECOVER DEVICE');
+      this.hud.setInteraction('PRESS E // RECOVER PACKAGE');
       if (this.player.isInteracting) {
         this.bomb.pickUp(this.currentOperativeId);
       }
@@ -492,7 +513,7 @@ export class Game {
     const bombPosition = new THREE.Vector3(snapshot.position.x, 1.65, snapshot.position.z);
     const defenders = this.match.squadFor('defenders');
     if (defenders === 'alpha' && !this.playerHealth.isDead && this.withinArea(this.player.position, bombPosition, INTERACTION_RANGE)) {
-      this.hud.setInteraction(this.player.isInteracting ? 'HOLD E // DEFUSING DEVICE' : 'HOLD E // DEFUSE DEVICE');
+      this.hud.setInteraction(this.player.isInteracting ? 'HOLD E // OVERRIDING CACHE' : 'HOLD E // OVERRIDE CACHE');
       if (this.player.isInteracting) {
         this.bomb.beginDefuse(this.currentOperativeId, this.hasDefuseKit);
       }
@@ -653,6 +674,9 @@ export class Game {
   };
 
   private readonly handlePointerDown = (event: PointerEvent): void => {
+    if (event.pointerType === 'touch') {
+      return;
+    }
     this.audio.initialize();
     if (event.button === 0) {
       this.fireHeld = true;
@@ -662,6 +686,9 @@ export class Game {
   };
 
   private readonly handlePointerUp = (event: PointerEvent): void => {
+    if (event.pointerType === 'touch') {
+      return;
+    }
     if (event.button === 0) {
       this.fireHeld = false;
     } else if (event.button === 2) {

@@ -11,7 +11,7 @@ export class BombDevice {
   private blastRemaining = 0;
 
   public constructor(scene: THREE.Scene) {
-    this.root.name = 'breach-device';
+    this.root.name = 'intel-package-cache';
     this.root.userData.isImpactEffect = true;
     const caseMaterial = new THREE.MeshStandardMaterial({ color: 0x202723, roughness: 0.7, metalness: 0.36 });
     const panelMaterial = new THREE.MeshStandardMaterial({ color: 0x101515, roughness: 0.38, metalness: 0.62 });
