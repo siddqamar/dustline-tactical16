@@ -2,8 +2,8 @@ import * as THREE from 'three';
 import type { BoxCollider, CoverPoint, MapSpawn, NavigationPoint, ObjectiveArea } from './WorldTypes';
 import { createSurfaceTexture } from './SurfaceTexture';
 
-const MAP_HALF_SIZE = 38;
-const WALL_HEIGHT = 3.4;
+const MAP_HALF_SIZE = 42;
+const WALL_HEIGHT = 4.2;
 
 interface BoxOptions {
   readonly collidable?: boolean;
@@ -22,16 +22,16 @@ export class TacticalMap {
 
   private readonly geometryCache = new Map<string, THREE.BoxGeometry>();
   private readonly materials = {
-    concrete: new THREE.MeshStandardMaterial({ color: 0x716f66, map: createSurfaceTexture('concrete', 1.5, 1.5), roughness: 0.91, metalness: 0.03 }),
-    concreteLight: new THREE.MeshStandardMaterial({ color: 0x8b8779, map: createSurfaceTexture('concrete', 1.1, 1.1), roughness: 0.88, metalness: 0.02 }),
-    darkConcrete: new THREE.MeshStandardMaterial({ color: 0x4e524f, map: createSurfaceTexture('concrete', 2, 2), roughness: 0.94, metalness: 0.02 }),
-    wood: new THREE.MeshStandardMaterial({ color: 0x725a3c, map: createSurfaceTexture('wood', 1.2, 1.2), roughness: 0.83, metalness: 0.02 }),
-    metal: new THREE.MeshStandardMaterial({ color: 0x555c58, map: createSurfaceTexture('metal', 1.3, 1.3), roughness: 0.54, metalness: 0.46 }),
-    siteAlpha: new THREE.MeshStandardMaterial({ color: 0xa99542, roughness: 0.73, metalness: 0.04, emissive: 0x342e0a, emissiveIntensity: 0.3 }),
-    siteBravo: new THREE.MeshStandardMaterial({ color: 0x4b8b8c, roughness: 0.72, metalness: 0.05, emissive: 0x0a2d2d, emissiveIntensity: 0.34 }),
-    ground: new THREE.MeshStandardMaterial({ color: 0x373b38, map: createSurfaceTexture('ground', 4, 4), roughness: 0.98, metalness: 0.01 }),
-    paint: new THREE.MeshStandardMaterial({ color: 0xb8b27b, roughness: 0.78, metalness: 0.03 }),
-    glass: new THREE.MeshStandardMaterial({ color: 0x54777a, roughness: 0.18, metalness: 0.44, transparent: true, opacity: 0.64, emissive: 0x173436, emissiveIntensity: 0.34 }),
+    concrete: new THREE.MeshStandardMaterial({ color: 0x6f6757, map: createSurfaceTexture('concrete', 1.5, 1.5), roughness: 0.93, metalness: 0.03 }),
+    concreteLight: new THREE.MeshStandardMaterial({ color: 0x9a8d72, map: createSurfaceTexture('concrete', 1.1, 1.1), roughness: 0.9, metalness: 0.02 }),
+    darkConcrete: new THREE.MeshStandardMaterial({ color: 0x3f403b, map: createSurfaceTexture('concrete', 2, 2), roughness: 0.96, metalness: 0.02 }),
+    wood: new THREE.MeshStandardMaterial({ color: 0x765839, map: createSurfaceTexture('wood', 1.2, 1.2), roughness: 0.86, metalness: 0.02 }),
+    metal: new THREE.MeshStandardMaterial({ color: 0x4f514a, map: createSurfaceTexture('metal', 1.3, 1.3), roughness: 0.62, metalness: 0.42 }),
+    siteAlpha: new THREE.MeshStandardMaterial({ color: 0xb49d51, roughness: 0.76, metalness: 0.04, emissive: 0x3f300a, emissiveIntensity: 0.2 }),
+    siteBravo: new THREE.MeshStandardMaterial({ color: 0x8f6047, roughness: 0.75, metalness: 0.05, emissive: 0x32160d, emissiveIntensity: 0.2 }),
+    ground: new THREE.MeshStandardMaterial({ color: 0xb58b56, map: createSurfaceTexture('ground', 4, 4), roughness: 1, metalness: 0.01 }),
+    paint: new THREE.MeshStandardMaterial({ color: 0xc4ae72, roughness: 0.81, metalness: 0.03 }),
+    glass: new THREE.MeshStandardMaterial({ color: 0x52625e, roughness: 0.24, metalness: 0.28, transparent: true, opacity: 0.58, emissive: 0x17221e, emissiveIntensity: 0.18 }),
     rubber: new THREE.MeshStandardMaterial({ color: 0x181b1a, roughness: 0.96, metalness: 0.01 }),
   };
 
@@ -47,15 +47,25 @@ export class TacticalMap {
   }
 
   private buildGround(): void {
+    const groundTexture = new THREE.TextureLoader().load('/assets/sable-desert-ground.png');
+    groundTexture.colorSpace = THREE.SRGBColorSpace;
+    groundTexture.wrapS = THREE.RepeatWrapping;
+    groundTexture.wrapT = THREE.RepeatWrapping;
+    groundTexture.repeat.set(7, 7);
+    this.materials.ground.map = groundTexture;
+    this.materials.ground.needsUpdate = true;
+
     const ground = new THREE.Mesh(new THREE.PlaneGeometry(MAP_HALF_SIZE * 2, MAP_HALF_SIZE * 2), this.materials.ground);
     ground.rotation.x = -Math.PI / 2;
     ground.receiveShadow = true;
     this.root.add(ground);
 
-    const roadMaterial = new THREE.MeshStandardMaterial({ color: 0x484b46, roughness: 0.97, metalness: 0.01 });
+    const roadMaterial = new THREE.MeshStandardMaterial({ color: 0x5e5140, map: createSurfaceTexture('ground', 2.8, 2.8), roughness: 0.99, metalness: 0.01 });
     this.addBox(new THREE.Vector3(0, 0.025, 0), new THREE.Vector3(10, 0.05, 74), { material: roadMaterial, collidable: false });
     this.addBox(new THREE.Vector3(0, 0.028, -20), new THREE.Vector3(64, 0.055, 7), { material: roadMaterial, collidable: false });
     this.addBox(new THREE.Vector3(0, 0.03, 20), new THREE.Vector3(64, 0.06, 7), { material: roadMaterial, collidable: false });
+    this.addDune(new THREE.Vector3(-35, 0, 28), 10, 2.4);
+    this.addDune(new THREE.Vector3(34, 0, -26), 8, 1.9);
   }
 
   private buildPerimeter(): void {
@@ -208,6 +218,105 @@ export class TacticalMap {
     this.addGroundDetails();
     this.addWayfindingSign('A // RELAY', new THREE.Vector3(-21.5, 2.5, -27.8), 0, 0xc3ad55);
     this.addWayfindingSign('B // YARD', new THREE.Vector3(21.5, 2.5, 27.8), Math.PI, 0x5aa5a5);
+    this.addWatchtower(new THREE.Vector3(-34, 0, -29), 'NORTH WATCH');
+    this.addWatchtower(new THREE.Vector3(34, 0, 29), 'SOUTH WATCH');
+    this.addRelayDish(new THREE.Vector3(12, 0, -25));
+    this.addShippingContainer(new THREE.Vector3(-11, 1.15, 27), Math.PI / 2, 0x656044);
+    this.addShippingContainer(new THREE.Vector3(11, 1.15, -27), -Math.PI / 2, 0x4c5148);
+    this.addRockCluster(new THREE.Vector3(-31, 0, 30), 5);
+    this.addRockCluster(new THREE.Vector3(31, 0, -30), 4);
+    this.addDesertBrush(new THREE.Vector3(-7, 0, 29));
+    this.addDesertBrush(new THREE.Vector3(7, 0, -29));
+  }
+
+  private addDune(position: THREE.Vector3, width: number, height: number): void {
+    const duneMaterial = new THREE.MeshStandardMaterial({ color: 0xa68151, roughness: 1, metalness: 0 });
+    const dune = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2), duneMaterial);
+    dune.position.copy(position);
+    dune.scale.set(width, height, width * 0.54);
+    dune.receiveShadow = true;
+    this.root.add(dune);
+  }
+
+  private addWatchtower(position: THREE.Vector3, label: string): void {
+    const towerGroup = new THREE.Group();
+    towerGroup.position.copy(position);
+    const legMaterial = new THREE.MeshStandardMaterial({ color: 0x343936, roughness: 0.72, metalness: 0.62 });
+    const cabinMaterial = new THREE.MeshStandardMaterial({ color: 0x554b3e, roughness: 0.86, metalness: 0.3 });
+    for (const x of [-1.2, 1.2]) {
+      for (const z of [-1.2, 1.2]) {
+        const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.15, 6.6, 8), legMaterial);
+        leg.position.set(x, 3.3, z);
+        leg.castShadow = true;
+        towerGroup.add(leg);
+      }
+    }
+    const platform = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.25, 3.2), legMaterial);
+    platform.position.y = 6.2;
+    platform.castShadow = true;
+    towerGroup.add(platform);
+    const cabin = new THREE.Mesh(new THREE.BoxGeometry(2.7, 1.55, 2.7), cabinMaterial);
+    cabin.position.y = 7.05;
+    cabin.castShadow = true;
+    towerGroup.add(cabin);
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(2.15, 0.65, 4), legMaterial);
+    roof.position.y = 8.15;
+    roof.rotation.y = Math.PI / 4;
+    roof.castShadow = true;
+    towerGroup.add(roof);
+    this.root.add(towerGroup);
+
+    const sign = new THREE.Mesh(
+      new THREE.PlaneGeometry(2.2, 0.42),
+      new THREE.MeshStandardMaterial({ color: 0x2d3028, roughness: 0.82, metalness: 0.08 }),
+    );
+    sign.position.set(position.x, 5.3, position.z + 1.7);
+    sign.rotation.x = -Math.PI / 2;
+    this.root.add(sign);
+    void label;
+  }
+
+  private addRelayDish(position: THREE.Vector3): void {
+    const dishMaterial = new THREE.MeshStandardMaterial({ color: 0x85816e, roughness: 0.42, metalness: 0.66 });
+    const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.22, 5.8, 12), this.materials.metal);
+    mast.position.set(position.x, 2.9, position.z);
+    mast.castShadow = true;
+    this.root.add(mast);
+    const dish = new THREE.Mesh(new THREE.SphereGeometry(2.15, 24, 12, 0, Math.PI, 0, Math.PI / 2), dishMaterial);
+    dish.position.set(position.x, 5.45, position.z);
+    dish.rotation.z = -0.32;
+    dish.castShadow = true;
+    this.root.add(dish);
+  }
+
+  private addShippingContainer(position: THREE.Vector3, rotationY: number, color: number): void {
+    const material = new THREE.MeshStandardMaterial({ color, roughness: 0.74, metalness: 0.52, map: createSurfaceTexture('metal', 2, 2) });
+    const container = this.addBox(position, new THREE.Vector3(3.2, 2.3, 9.2), { material });
+    container.rotation.y = rotationY;
+  }
+
+  private addRockCluster(position: THREE.Vector3, count: number): void {
+    const rockMaterial = new THREE.MeshStandardMaterial({ color: 0x5c5141, roughness: 0.98, metalness: 0 });
+    for (let index = 0; index < count; index += 1) {
+      const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.45 + index * 0.07, 0), rockMaterial);
+      rock.position.set(position.x + (index - count / 2) * 0.7, 0.34 + index * 0.05, position.z + Math.sin(index) * 0.5);
+      rock.scale.set(1.2, 0.8 + (index % 2) * 0.26, 0.8);
+      rock.rotation.set(0.2 * index, 0.4 * index, 0.1 * index);
+      rock.castShadow = true;
+      rock.receiveShadow = true;
+      this.root.add(rock);
+    }
+  }
+
+  private addDesertBrush(position: THREE.Vector3): void {
+    const brushMaterial = new THREE.MeshStandardMaterial({ color: 0x5f623b, roughness: 1, metalness: 0 });
+    for (let index = 0; index < 7; index += 1) {
+      const blade = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.85 + index * 0.03, 5), brushMaterial);
+      blade.position.set(position.x + Math.cos(index) * 0.48, 0.4, position.z + Math.sin(index) * 0.42);
+      blade.rotation.z = (index - 3) * 0.08;
+      blade.castShadow = true;
+      this.root.add(blade);
+    }
   }
 
   private addRoadMarkings(): void {

@@ -19,7 +19,7 @@ import { MatchManager } from '../match/MatchManager';
 import type { MatchConfig, MatchPhase, MatchSnapshot, SquadId, TeamRole } from '../match/MatchTypes';
 import type { MapSpawn, ObjectiveArea } from '../world/WorldTypes';
 
-const CLEAR_COLOR = 0x101719;
+const CLEAR_COLOR = 0x211a15;
 const PLAYER_ID = 'alpha-1';
 const INTERACTION_RANGE = 2.2;
 
@@ -68,7 +68,7 @@ export class Game {
   public constructor(private readonly root: HTMLElement) {
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(CLEAR_COLOR);
-    this.scene.fog = new THREE.FogExp2(0x182123, 0.012);
+    this.scene.fog = new THREE.FogExp2(0x6d5d4d, 0.009);
 
     this.camera = new THREE.PerspectiveCamera(72, 1, 0.05, 220);
     this.camera.position.set(-29, 1.65, 0);
@@ -76,13 +76,13 @@ export class Game {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.35));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.28;
     this.canvas = this.renderer.domElement;
     this.canvas.className = 'game-canvas';
-    this.canvas.setAttribute('aria-label', 'Dustline Tactical game viewport');
+    this.canvas.setAttribute('aria-label', 'Operation Sable game viewport');
     this.scene.add(this.camera);
 
     this.debugElement = document.createElement('div');
@@ -165,8 +165,8 @@ export class Game {
     overlay.className = 'game-overlay';
     overlay.innerHTML = `
       <div class="game-brand">
-        <span class="game-brand-mark">D</span>
-        <span><strong>DUSTLINE</strong><small>GLASS MERIDIAN // V2</small></span>
+        <span class="game-brand-mark">S</span>
+        <span><strong>OPERATION SABLE</strong><small>RELAY STATION 14 // FIELD LINK</small></span>
       </div>
       <div class="game-status" data-game-status="setup"><span class="status-dot"></span><span class="status-label">OPERATION SETUP</span></div>
       <div class="game-reticle" aria-hidden="true"><span></span><span></span><span></span><span></span><i></i></div>
@@ -182,8 +182,8 @@ export class Game {
         side: THREE.BackSide,
         depthWrite: false,
         uniforms: {
-          horizonColor: { value: new THREE.Color(0x84908a) },
-          zenithColor: { value: new THREE.Color(0x25383d) },
+          horizonColor: { value: new THREE.Color(0xd0a56c) },
+          zenithColor: { value: new THREE.Color(0x392b26) },
         },
         vertexShader: 'varying vec3 vWorldPosition; void main(){ vec4 worldPosition = modelMatrix * vec4(position, 1.0); vWorldPosition = worldPosition.xyz; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
         fragmentShader: 'uniform vec3 horizonColor; uniform vec3 zenithColor; varying vec3 vWorldPosition; void main(){ float h = clamp(normalize(vWorldPosition).y * 0.72 + 0.28, 0.0, 1.0); gl_FragColor = vec4(mix(horizonColor, zenithColor, pow(h, 0.7)), 1.0); }',
@@ -191,13 +191,13 @@ export class Game {
     );
     this.scene.add(sky);
 
-    const hemisphere = new THREE.HemisphereLight(0xc5d9d8, 0x4a4235, 2.05);
+    const hemisphere = new THREE.HemisphereLight(0xf2c38a, 0x554334, 2.2);
     this.scene.add(hemisphere);
 
-    const ambient = new THREE.AmbientLight(0x8b9a95, 0.72);
+    const ambient = new THREE.AmbientLight(0xb89b78, 0.68);
     this.scene.add(ambient);
 
-    const sun = new THREE.DirectionalLight(0xffdfb1, 3.8);
+    const sun = new THREE.DirectionalLight(0xffc989, 4.3);
     sun.position.set(-24, 34, 18);
     sun.castShadow = true;
     sun.shadow.mapSize.set(2048, 2048);
@@ -210,13 +210,13 @@ export class Game {
     sun.shadow.bias = -0.00025;
     this.scene.add(sun);
 
-    const skyFill = new THREE.DirectionalLight(0x91b8bf, 1.35);
+    const skyFill = new THREE.DirectionalLight(0x9b9c8b, 1.1);
     skyFill.position.set(32, 18, -24);
     this.scene.add(skyFill);
 
-    const industrialFill = new THREE.PointLight(0x67a5a4, 8, 46, 2);
-    industrialFill.position.set(10, 7, 10);
-    this.scene.add(industrialFill);
+    const relayFill = new THREE.PointLight(0xe1a96d, 6, 42, 2);
+    relayFill.position.set(10, 7, 10);
+    this.scene.add(relayFill);
   }
 
   private readonly startMatch = (config: MatchConfig): void => {

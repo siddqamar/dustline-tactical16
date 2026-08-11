@@ -17,9 +17,9 @@ export class PreMatchMenu {
     this.element.innerHTML = `
       <div class="prematch-backdrop" aria-hidden="true"></div>
       <div class="prematch-panel">
-        <p class="menu-eyebrow">DUSTLINE COMMAND // OPERATION SETUP</p>
-        <h1 id="operation-title">Operation Glass Meridian</h1>
-        <p class="menu-brief">Secure the industrial relay. Attackers arm the breach device at either marked site. Defenders hold the line or neutralize the device.</p>
+        <p class="menu-eyebrow">FIELD COMMAND // OPERATION SABLE</p>
+        <h1 id="operation-title">Relay Station 14</h1>
+        <p class="menu-brief">Infiltrate the desert relay station, recover the intelligence package, and reach extraction. Move quietly or force a path through the compound.</p>
         <div class="menu-grid">
           <label class="menu-field">
             <span>Squad strength</span>
@@ -29,7 +29,7 @@ export class PreMatchMenu {
             <small>You command one operative. AI fills every remaining slot.</small>
           </label>
           <label class="menu-field">
-            <span>Enemy doctrine</span>
+            <span>Guard doctrine</span>
             <select data-difficulty>
               ${Object.entries(BOT_DIFFICULTIES).map(([id, profile]) => `<option value="${id}">${profile.label}</option>`).join('')}
             </select>
@@ -37,21 +37,21 @@ export class PreMatchMenu {
           </label>
         </div>
         <fieldset class="role-picker">
-          <legend>Starting assignment</legend>
+          <legend>Insertion assignment</legend>
           <button class="role-card is-selected" type="button" data-role="attackers">
             <span class="role-index">01</span>
-            <strong>BREACH</strong>
-            <small>Carry the device, clear a site, plant, and hold.</small>
+            <strong>INFILTRATE</strong>
+            <small>Enter the station, recover the package, and reach extraction.</small>
           </button>
           <button class="role-card" type="button" data-role="defenders">
             <span class="role-index">02</span>
-            <strong>WARDEN</strong>
-            <small>Read the attack, protect both sites, and defuse.</small>
+            <strong>OVERWATCH</strong>
+            <small>Secure the relay, sweep the compound, and stop the breach.</small>
           </button>
         </fieldset>
         <div class="menu-footer">
-          <div><span>FORMAT</span><strong>FIRST TO 4 // SIDE SWITCH</strong></div>
-          <button class="menu-primary" type="button" data-start-operation>START OPERATION</button>
+          <div><span>MISSION</span><strong>RELAY STATION 14 // CLASSIFIED</strong></div>
+          <button class="menu-primary" type="button" data-start-operation>BEGIN INSERTION</button>
         </div>
       </div>
     `;
