@@ -69,3 +69,17 @@
 - [x] Add regression coverage for immediate playable start and multiple field combatants.
 - [x] Update `decisions.md` and `flow.md` with the new opening flow.
 - [x] Commit the opening-flow and character work separately from later polish.
+
+## Follow-up - true in-field combat experience
+
+- [x] Reproduce the no-movement bug through the end-user browser flow.
+- [x] Remove hidden pointer-lock gates from keyboard movement and weapon fire.
+- [x] Generate and integrate realistic Sable and guard combatants inside the Three.js field.
+- [x] Generate and integrate realistic pistol, rifle, and knife first-person views.
+- [x] Keep generated weapon views responsive on phone browsers.
+- [x] Add an opening fire delay, coordinated bot fire, and squad reinforcement waves.
+- [x] Extend the live mission to five minutes and default new players to easy guard doctrine.
+- [x] Add E2E coverage for movement, firing, and a sustained opening firefight.
+- [x] Perform desktop and phone visual checks of the live viewport.
+- [x] Update `decisions.md` and `flow.md` with the corrected execution flow.
+- [x] Commit input, combat continuity, and in-field visuals in focused stages.

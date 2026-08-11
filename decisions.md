@@ -77,3 +77,27 @@
 - Decision: Let match timing and bot combat advance while pointer lock is unavailable.
 - Reason: Browsers and phones handle focus differently, and the player should not lose the operation before clicking the canvas or touching the controls.
 - Constraint: Pointer lock still improves desktop camera control, but it is now an input enhancement rather than a match-state gate.
+
+## 2026-08-11 - Use generated combat sprites inside the Three.js field
+
+- Decision: Replace the visible primitive bot bodies with original imagegen Sable commandos and relay guards rendered as world-space billboards.
+- Reason: The previous capsule-and-box bodies looked like placeholders and did not communicate a believable military squad.
+- Constraint: Keep invisible Three.js body and head hitboxes behind each sprite so combat, damage zones, navigation, and performance stay predictable.
+
+## 2026-08-11 - Replace primitive first-person weapons with generated view models
+
+- Decision: Use original imagegen pistol, rifle, and knife views with tactical-gloved hands while preserving the existing weapon statistics and recoil logic.
+- Reason: Realistic characters beside a block-built weapon still made the game feel unfinished.
+- Constraint: Scale the weapon views down on portrait screens so mobile fire, aim, reload, and interaction controls remain usable.
+
+## 2026-08-11 - Make keyboard and firing input work before pointer lock
+
+- Decision: Accept WASD and weapon fire whenever live combat is active, while reserving pointer lock only for unrestricted desktop mouse look.
+- Reason: The browser cannot request pointer lock without a user gesture, so requiring it before all input created a hidden dead state immediately after insertion.
+- Constraint: Show a concise field-control hint until the player clicks the viewport, and keep touch input independent from pointer lock.
+
+## 2026-08-11 - Reinforce wiped squads instead of ending the firefight
+
+- Decision: Redeploy a wiped Sable squad and respawn eliminated guards during the live field operation.
+- Reason: Immediate elimination resolution recreated a short competitive round instead of the sustained battlefield mission the user requested.
+- Constraint: Objective completion and the five-minute mission timer still resolve the operation, while a six-second opening fire delay gives the player time to orient.

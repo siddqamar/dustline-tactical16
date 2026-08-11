@@ -11,6 +11,21 @@ export type BotState = 'patrol' | 'alert' | 'engage' | 'search' | 'dead' | 'cont
 
 const BOT_WEAPON = WEAPON_DEFINITIONS.find((weapon) => weapon.id === 'rifle') ?? WEAPON_DEFINITIONS[0]!;
 const GOAL_REPATH_DISTANCE = 4;
+const BOT_TEXTURES = new Map<SquadId, THREE.Texture>();
+
+function getBotTexture(squad: SquadId): THREE.Texture {
+  const cached = BOT_TEXTURES.get(squad);
+  if (cached) {
+    return cached;
+  }
+
+  const path = squad === 'alpha' ? '/assets/sable-commando-field.webp' : '/assets/relay-guard-field.webp';
+  const texture = new THREE.TextureLoader().load(path);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 4;
+  BOT_TEXTURES.set(squad, texture);
+  return texture;
+}
 
 export class BotController {
   public readonly position: THREE.Vector3;
@@ -41,6 +56,9 @@ export class BotController {
   private bodyMesh!: THREE.Mesh;
   private headMesh!: THREE.Mesh;
   private visualBody!: THREE.Group;
+  private characterSprite!: THREE.Sprite;
+  private muzzleFlash!: THREE.PointLight;
+  private muzzleFlashRemaining = 0;
 
   public constructor(
     public readonly id: string,
@@ -101,7 +119,7 @@ export class BotController {
 
   public reset(spawn: THREE.Vector3): void {
     this.position.copy(spawn);
-      this.state = 'patrol';
+    this.state = 'patrol';
     this.memoryRemaining = 0;
     this.focusedTargetId = null;
     this.targetVisible = false;
@@ -113,6 +131,7 @@ export class BotController {
     this.burstCooldownRemaining = 0;
     this.burstShotsRemaining = 0;
     this.reloadRemaining = 0;
+    this.muzzleFlashRemaining = 0;
     this.health.reset();
     this.path = [];
     this.pathIndex = 0;
@@ -204,6 +223,7 @@ export class BotController {
     this.fireCooldown = Math.max(0, this.fireCooldown - deltaSeconds);
     this.burstCooldownRemaining = Math.max(0, this.burstCooldownRemaining - deltaSeconds);
     this.reactionRemaining = Math.max(0, this.reactionRemaining - deltaSeconds);
+    this.muzzleFlashRemaining = Math.max(0, this.muzzleFlashRemaining - deltaSeconds);
     if (this.reloadRemaining <= 0) {
       return;
     }
@@ -243,6 +263,7 @@ export class BotController {
     this.aimDirection.z += (Math.random() - 0.5) * aimError;
     const shot: WeaponShot = { weapon: BOT_WEAPON, spread: 0, recoil: BOT_WEAPON.recoil };
     this.combat.fireAtTarget(this.position, this.aimDirection, shot, target, this.id, this.squad);
+    this.muzzleFlashRemaining = 0.065;
     this.magazine -= 1;
     this.burstShotsRemaining -= 1;
     this.fireCooldown = BOT_WEAPON.fireInterval * this.profile.fireIntervalMultiplier;
@@ -308,87 +329,61 @@ export class BotController {
   }
 
   private buildVisual(): void {
-    const uniformColor = this.squad === 'alpha' ? 0x766d59 : 0x4b5045;
-    const accentColor = this.squad === 'alpha' ? 0xc19b61 : 0xa8644c;
-    const uniform = new THREE.MeshStandardMaterial({ color: uniformColor, roughness: 0.88, metalness: 0.04 });
-    const armor = new THREE.MeshStandardMaterial({ color: 0x202827, roughness: 0.62, metalness: 0.24 });
-    const accent = new THREE.MeshStandardMaterial({ color: accentColor, roughness: 0.65, metalness: 0.08 });
-    const skin = new THREE.MeshStandardMaterial({ color: 0x806856, roughness: 0.82, metalness: 0 });
-    const weapon = new THREE.MeshStandardMaterial({ color: 0x171c1d, roughness: 0.42, metalness: 0.68 });
     this.visualBody = new THREE.Group();
     this.root.add(this.visualBody);
 
-    this.bodyMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.35, 0.72, 6, 12), uniform);
+    const hitboxMaterial = new THREE.MeshBasicMaterial({
+      colorWrite: false,
+      depthWrite: false,
+      opacity: 0,
+      transparent: true,
+    });
+    this.bodyMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.36, 0.78, 6, 12), hitboxMaterial);
     this.bodyMesh.position.y = 1.12;
-    this.addVisual(this.bodyMesh);
+    this.bodyMesh.userData.isBot = true;
+    this.visualBody.add(this.bodyMesh);
 
-    const vest = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.68, 0.34), armor);
-    vest.position.set(0, 1.24, -0.03);
-    this.addVisual(vest);
-
-    const backpack = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.62, 0.22), uniform);
-    backpack.position.set(0, 1.27, 0.25);
-    backpack.castShadow = true;
-    this.addVisual(backpack);
-
-    const radio = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.28, 0.08), accent);
-    radio.position.set(-0.36, 1.48, -0.1);
-    this.addVisual(radio);
-
-    const chestPatch = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.14, 0.025), accent);
-    chestPatch.position.set(0, 1.34, -0.215);
-    this.addVisual(chestPatch);
-
-    this.headMesh = new THREE.Mesh(new THREE.SphereGeometry(0.245, 16, 12), skin);
+    this.headMesh = new THREE.Mesh(new THREE.SphereGeometry(0.25, 14, 10), hitboxMaterial);
     this.headMesh.position.y = 1.92;
-    this.addVisual(this.headMesh);
+    this.headMesh.userData.isBot = true;
+    this.visualBody.add(this.headMesh);
 
-    const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.27, 16, 9, 0, Math.PI * 2, 0, Math.PI * 0.58), armor);
-    helmet.position.y = 1.99;
-    this.addVisual(helmet);
+    const spriteMaterial = new THREE.SpriteMaterial({
+      alphaTest: 0.16,
+      depthTest: true,
+      depthWrite: true,
+      map: getBotTexture(this.squad),
+      toneMapped: false,
+      transparent: true,
+    });
+    this.characterSprite = new THREE.Sprite(spriteMaterial);
+    this.characterSprite.center.set(0.5, 0);
+    this.characterSprite.position.y = 0.02;
+    this.characterSprite.scale.set(1.43, 2.15, 1);
+    this.characterSprite.userData.isBot = true;
+    this.characterSprite.raycast = () => {};
+    this.visualBody.add(this.characterSprite);
 
-    const visor = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.09, 0.035), accent);
-    visor.position.set(0, 1.94, -0.225);
-    this.addVisual(visor);
+    const groundShadow = new THREE.Mesh(
+      new THREE.CircleGeometry(0.48, 18),
+      new THREE.MeshBasicMaterial({ color: 0x080706, depthWrite: false, opacity: 0.28, transparent: true }),
+    );
+    groundShadow.rotation.x = -Math.PI / 2;
+    groundShadow.position.y = 0.012;
+    groundShadow.raycast = () => {};
+    this.root.add(groundShadow);
 
-    for (const side of [-1, 1]) {
-      const arm = new THREE.Mesh(new THREE.CapsuleGeometry(0.105, 0.55, 5, 8), uniform);
-      arm.position.set(side * 0.46, 1.22, -0.12);
-      arm.rotation.z = side * -0.16;
-      arm.rotation.x = -0.76;
-      this.addVisual(arm);
-
-      const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.14, 0.62, 5, 8), uniform);
-      leg.position.set(side * 0.19, 0.47, 0);
-      this.addVisual(leg);
-
-      const boot = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.2, 0.42), armor);
-      boot.position.set(side * 0.19, 0.12, -0.08);
-      this.addVisual(boot);
-    }
-
-    const rifle = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.18, 1.05), weapon);
-    rifle.position.set(0.2, 1.22, -0.52);
-    rifle.rotation.set(-0.08, 0, -0.15);
-    this.addVisual(rifle);
-
-    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.04, 0.58, 10), weapon);
-    barrel.rotation.x = Math.PI / 2;
-    barrel.position.set(0.2, 1.24, -1.28);
-    this.addVisual(barrel);
-  }
-
-  private addVisual(mesh: THREE.Mesh): void {
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    mesh.userData.isBot = true;
-    this.visualBody.add(mesh);
+    this.muzzleFlash = new THREE.PointLight(0xffb45f, 0, 4.5, 2);
+    this.muzzleFlash.position.set(0.28, 1.28, -0.55);
+    this.root.add(this.muzzleFlash);
   }
 
   private syncVisual(deltaSeconds: number): void {
     this.root.position.set(this.position.x, 0, this.position.z);
     this.root.visible = this.state !== 'dead' && this.state !== 'controlled';
     const moving = this.movement.lengthSq() > 0.1 && deltaSeconds > 0;
-    this.visualBody.position.y = moving ? Math.sin(this.movementTime * 3.2) * 0.025 : THREE.MathUtils.lerp(this.visualBody.position.y, 0, 0.2);
+    this.visualBody.position.y = moving ? Math.abs(Math.sin(this.movementTime * 3.5)) * 0.045 : THREE.MathUtils.lerp(this.visualBody.position.y, 0, 0.2);
+    (this.characterSprite.material as THREE.SpriteMaterial).rotation = moving ? Math.sin(this.movementTime * 2.2) * 0.012 : 0;
+    this.muzzleFlash.intensity = this.muzzleFlashRemaining > 0 ? 5.5 : 0;
   }
 }
