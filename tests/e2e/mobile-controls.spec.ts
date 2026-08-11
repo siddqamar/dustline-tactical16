@@ -6,15 +6,12 @@ test.use({
   viewport: { width: 390, height: 844 },
 });
 
-test('shows touch controls after mobile deployment', async ({ page }) => {
+test('shows touch controls when the mobile operation opens', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-start-operation]').click();
-  await expect(page.locator('.buy-menu')).toBeVisible();
-  await expect(page.locator('.mobile-controls')).toBeHidden();
-
-  await page.locator('[data-deploy]').click();
   await expect(page.locator('.mobile-controls')).toBeVisible();
   await expect(page.locator('[data-mobile-fire]')).toBeVisible();
   await expect(page.locator('[data-mobile-aim]')).toBeVisible();
   await expect(page.locator('[data-mobile-weapon="1"]')).toBeVisible();
+  await expect(page.locator('.hud-round-value')).toHaveText('LIVE COMBAT', { timeout: 8_000 });
 });

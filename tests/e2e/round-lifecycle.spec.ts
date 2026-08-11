@@ -5,11 +5,11 @@ async function startOperation(page: import('@playwright/test').Page, teamSize = 
   await expect(page.locator('.prematch-menu')).toBeVisible();
   await page.locator('[data-team-size]').selectOption(teamSize);
   await page.locator('[data-start-operation]').click();
-  await expect(page.locator('.buy-menu')).toBeVisible();
+  await expect(page.locator('.buy-menu')).toBeHidden();
+  await expect(page.locator('.hud-round-value')).toHaveText('LIVE COMBAT', { timeout: 8_000 });
 }
 
 async function deploy(page: import('@playwright/test').Page): Promise<void> {
-  await page.locator('[data-deploy]').click();
   const canvas = page.locator('.game-canvas');
   await expect(canvas).toBeVisible();
   await canvas.click({ position: { x: 480, y: 270 } });
@@ -27,28 +27,29 @@ test('waits in operation setup without starting hidden combat', async ({ page })
   await expect(page.locator('.hud-health-value')).toHaveText('100');
 });
 
-test('applies team size and role choices before opening the buy phase', async ({ page }) => {
+test('starts a staffed field operation with the selected squad size', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-team-size]').selectOption('4');
   await page.locator('[data-role="defenders"]').click();
   await page.locator('[data-start-operation]').click();
 
-  await expect(page.locator('.buy-menu')).toBeVisible();
-  await expect(page.locator('[data-buy-role]')).toHaveText('OVERWATCH KIT');
+  await expect(page.locator('.buy-menu')).toBeHidden();
   await expect(page.locator('.hud-alpha-alive')).toHaveText('4');
-  await expect(page.locator('.hud-round-value')).toHaveText('BUY PHASE');
+  await expect(page.locator('.hud-bravo-alive')).toHaveText('4');
+  await expect(page.locator('.hud-round-value')).toHaveText('LIVE COMBAT', { timeout: 8_000 });
 });
 
-test('enters live combat only after loadout confirmation and player deployment', async ({ page }) => {
+test('issues the full kit before the opening combat window', async ({ page }) => {
   await startOperation(page);
-  await expect(page.locator('[data-buy-credits]')).toHaveText('$00800');
-  await page.locator('[data-buy-item="armor"]').click();
-  await expect(page.locator('[data-buy-credits]')).toHaveText('$00150');
+  await expect(page.locator('.hud-weapon-name')).toHaveText('P9 SERVICE PISTOL');
+  await page.keyboard.press('Digit2');
+  await expect(page.locator('.hud-weapon-name')).toHaveText('AR-17 FIELD RIFLE');
+  await page.keyboard.press('Digit3');
+  await expect(page.locator('.hud-weapon-name')).toHaveText('FIELD KNIFE');
+  await expect(page.locator('.hud-round-value')).toHaveText('LIVE COMBAT', { timeout: 8_000 });
   await deploy(page);
 
-  await expect(page.locator('.hud-round-value')).toHaveText('LIVE COMBAT', { timeout: 6_000 });
   await expect(page.locator('.status-label')).toHaveText('LIVE');
-  await expect(page.locator('.hud-armor-value')).toHaveText('COMPOSITE ARMOR');
   await expect(page.locator('.hud-alpha-alive')).toHaveText('3');
   await expect(page.locator('.hud-bravo-alive')).toHaveText('3');
 });
@@ -56,7 +57,6 @@ test('enters live combat only after loadout confirmation and player deployment',
 test('keeps the controlled operative alive through the opening engagement window', async ({ page }) => {
   await startOperation(page, '5', 'medium');
   await deploy(page);
-  await expect(page.locator('.hud-round-value')).toHaveText('LIVE COMBAT', { timeout: 6_000 });
   await page.waitForTimeout(6_000);
 
   expect(Number(await page.locator('.hud-health-value').textContent())).toBeGreaterThan(0);

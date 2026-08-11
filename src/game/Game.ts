@@ -276,7 +276,7 @@ export class Game {
 
   private readonly update = (deltaSeconds: number): void => {
     this.updateDebug(deltaSeconds);
-    this.match.update(deltaSeconds, this.player.isPointerLocked);
+    this.match.update(deltaSeconds, true);
     const bots = this.bots;
     if (!this.config || !bots) {
       this.bombDevice.update(deltaSeconds, false);
@@ -352,6 +352,7 @@ export class Game {
         this.prepareRound(snapshot);
       }
       this.renderBuyMenu();
+      this.match.finishBuyPhase();
     } else {
       this.buyMenu.hide();
     }
@@ -404,7 +405,7 @@ export class Game {
     }
     const carrierPosition = this.operativePosition(carrierId) ?? this.player.position;
     this.bomb.reset(carrierId, { x: carrierPosition.x, y: 0.8, z: carrierPosition.z });
-    this.hud.announce(`ROUND ${snapshot.roundNumber.toString().padStart(2, '0')} // ${snapshot.roles.alpha.toUpperCase()}`, 2);
+    this.hud.announce(`INSERTION ${snapshot.roundNumber.toString().padStart(2, '0')} // ${snapshot.roles.alpha.toUpperCase()} SQUAD LINKED`, 3.2);
   }
 
   private renderBuyMenu(): void {

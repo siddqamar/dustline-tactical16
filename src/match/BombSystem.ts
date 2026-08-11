@@ -23,7 +23,7 @@ export type BombEventListener = (event: BombEvent) => void;
 export const BOMB_TIMING = {
   defuseSeconds: 10,
   defuseWithKitSeconds: 5,
-  fuseSeconds: 35,
+  fuseSeconds: 120,
   plantSeconds: 3,
 } as const;
 
