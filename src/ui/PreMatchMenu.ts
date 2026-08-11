@@ -16,6 +16,10 @@ export class PreMatchMenu {
     this.element.setAttribute('aria-labelledby', 'operation-title');
     this.element.innerHTML = `
       <div class="prematch-backdrop" aria-hidden="true"></div>
+      <div class="prematch-recon" aria-label="Relay Station 14 reconnaissance scan">
+        <span>FIELD RECON // 14</span>
+        <i></i>
+      </div>
       <div class="prematch-panel">
         <p class="menu-eyebrow">FIELD COMMAND // OPERATION SABLE</p>
         <h1 id="operation-title">Relay Station 14</h1>

@@ -26,7 +26,7 @@
 - [x] Rework the weapon set to rifle, pistol, and knife.
 - [x] Add weapon-specific damage, range, recoil, fire cadence, and handling.
 - [x] Add smooth aim zoom, FOV interpolation, weapon sway, recoil feedback, and knife range behavior.
-- [ ] Keep controls compatible with keyboard/mouse and touch.
+- [x] Keep controls compatible with keyboard/mouse and touch.
 
 ## Commit 3 - guards, awareness, and objectives
 
@@ -45,15 +45,15 @@
 ## Commit 5 - realistic visual pass
 
 - [x] Generate original raster assets with imagegen for military environment materials and atmosphere.
-- [ ] Improve lighting, shadows, fog, terrain detail, muzzle flashes, impact effects, and hit feedback.
-- [ ] Improve weapon presentation and the tactical HUD without copying branded game assets.
-- [ ] Keep asset sizes and rendering cost suitable for mobile browsers.
+- [x] Improve lighting, shadows, fog, terrain detail, muzzle flashes, impact effects, and hit feedback.
+- [x] Improve weapon presentation and the tactical HUD without copying branded game assets.
+- [x] Keep asset sizes and rendering cost suitable for mobile browsers.
 
 ## Commit 6 - verification and documentation
 
-- [ ] Run build, unit tests, and E2E tests.
-- [ ] Fix regressions and obvious visual or interaction issues found during browser verification.
-- [ ] Complete `decisions.md` with the reason for every material decision.
-- [ ] Complete `flow.md` with concise entry points, function calls, and execution flow.
-- [ ] Update this checklist as each item is completed.
-- [ ] Commit each focused stage with a descriptive message and bullet-point details.
+- [x] Run final build, unit tests, and E2E tests.
+- [x] Fix regressions and obvious visual or interaction issues found during browser verification.
+- [x] Complete `decisions.md` with the reason for every material decision.
+- [x] Complete `flow.md` with concise entry points, function calls, and execution flow.
+- [x] Update this checklist as each item is completed.
+- [x] Commit each focused stage with a descriptive message and bullet-point details.

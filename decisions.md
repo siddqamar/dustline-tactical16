@@ -47,3 +47,9 @@
 - Decision: Keep the existing timed relay interaction internally, but present it as caching an intelligence package and completing a transmission.
 - Reason: This preserves the tested round-resolution behavior while moving the player-facing objective away from bomb-site language.
 - Constraint: The internal state names remain stable for now, so the next objective-system pass can be isolated and tested separately.
+
+## 2026-08-11 - Prefer targeted visual feedback over expensive post-processing
+
+- Decision: Use generated materials and briefing imagery, plus lightweight Three.js geometry for muzzle flash, sway, and impact feedback.
+- Reason: These effects improve perceived realism while keeping draw cost and compatibility predictable on phone browsers.
+- Constraint: Keep renderer pixel ratio capped and reuse pooled impact effects instead of allocating particles every shot.

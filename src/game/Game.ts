@@ -289,7 +289,7 @@ export class Game {
     this.player.setAiming((this.aimHeld || this.mobileAimHeld) && combatActive && !this.playerHealth.isDead);
     this.player.update(deltaSeconds);
     this.updateMovementAudio(deltaSeconds, combatActive);
-    this.weapons.update(deltaSeconds, this.player.isAiming);
+    this.weapons.update(deltaSeconds, this.player.isAiming, this.player.isMoving);
     const targetFov = this.player.isAiming ? this.weapons.activeWeapon.adsFov : 76;
     const fovBlend = 1 - Math.exp(-11 * deltaSeconds);
     this.camera.fov = THREE.MathUtils.lerp(this.camera.fov, targetFov, fovBlend);

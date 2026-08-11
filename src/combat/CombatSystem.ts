@@ -119,7 +119,7 @@ export class CombatSystem {
 
     const damage = target.health.applyDamage(shot.weapon.damage, target.zone, target.multiplier);
     const point = target.position.clone();
-    this.spawnImpact(point);
+    this.spawnImpact(point, true);
     const result = { hit: true, point, damage, ownerId: target.ownerId };
     this.emit({ type: 'shot', shot, result, sourceId, sourceSquad });
     this.emit({ type: 'hit', shot, result, sourceId, sourceSquad });
@@ -146,7 +146,7 @@ export class CombatSystem {
     }
 
     const damage = hitbox.health.applyDamage(shot.weapon.damage, hitbox.zone, hitbox.multiplier);
-    this.spawnImpact(point);
+    this.spawnImpact(point, true);
     const result = { hit: true, point, damage, ownerId: hitbox.ownerId };
     this.emit({ type: 'shot', shot, result, sourceId, sourceSquad });
     this.emit({ type: 'hit', shot, result, sourceId, sourceSquad });
@@ -189,7 +189,7 @@ export class CombatSystem {
     return null;
   }
 
-  private spawnImpact(point: THREE.Vector3): void {
+  private spawnImpact(point: THREE.Vector3, hostile = false): void {
     const effect = this.impactEffects[this.impactCursor];
     if (!effect) {
       return;
@@ -198,6 +198,7 @@ export class CombatSystem {
     this.impactCursor = (this.impactCursor + 1) % this.impactEffects.length;
     effect.mesh.position.copy(point);
     effect.mesh.scale.setScalar(1);
+    (effect.mesh.material as THREE.MeshBasicMaterial).color.setHex(hostile ? 0xe2a16f : 0xe9d9ad);
     effect.mesh.visible = true;
     effect.lifetime = IMPACT_LIFETIME;
   }

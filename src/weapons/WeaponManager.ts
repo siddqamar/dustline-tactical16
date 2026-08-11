@@ -9,17 +9,27 @@ export class WeaponManager {
   private readonly viewModelRoot = new THREE.Group();
   private readonly viewModels = new Map<string, THREE.Group>();
   private readonly muzzleFlash = new THREE.PointLight(0xffd3a0, 0, 3.5, 2);
+  private readonly muzzleFlashMesh: THREE.Mesh;
   private activeIndex = 0;
   private reloadRemaining = 0;
   private fireCooldown = 0;
   private muzzleFlashRemaining = 0;
   private recoilKick = 0;
+  private viewModelTime = 0;
 
   public constructor(private readonly camera: THREE.PerspectiveCamera) {
     this.viewModelRoot.name = 'first-person-weapon';
     this.camera.add(this.viewModelRoot);
     this.muzzleFlash.position.set(0, 0, -0.9);
     this.viewModelRoot.add(this.muzzleFlash);
+    this.muzzleFlashMesh = new THREE.Mesh(
+      new THREE.ConeGeometry(0.11, 0.42, 8),
+      new THREE.MeshBasicMaterial({ color: 0xffd08a, transparent: true, opacity: 0.82, depthWrite: false }),
+    );
+    this.muzzleFlashMesh.position.set(0, 0, -1.36);
+    this.muzzleFlashMesh.rotation.x = -Math.PI / 2;
+    this.muzzleFlashMesh.visible = false;
+    this.viewModelRoot.add(this.muzzleFlashMesh);
 
     for (const definition of WEAPON_DEFINITIONS) {
       this.ammo.set(definition.id, {
@@ -49,19 +59,25 @@ export class WeaponManager {
     return this.reloadRemaining > 0;
   }
 
-  public update(deltaSeconds: number, aiming = false): void {
+  public update(deltaSeconds: number, aiming = false, moving = false): void {
+    this.viewModelTime += deltaSeconds * (moving ? 8.5 : 2);
     this.fireCooldown = Math.max(0, this.fireCooldown - deltaSeconds);
     this.muzzleFlashRemaining = Math.max(0, this.muzzleFlashRemaining - deltaSeconds);
-    this.muzzleFlash.intensity = this.muzzleFlashRemaining > 0 ? 5 : 0;
+    this.muzzleFlash.intensity = this.muzzleFlashRemaining > 0 && this.activeWeapon.category !== 'knife' ? 5 : 0;
+    this.muzzleFlashMesh.visible = this.muzzleFlashRemaining > 0 && this.activeWeapon.category !== 'knife';
+    this.muzzleFlashMesh.scale.setScalar(0.7 + this.muzzleFlashRemaining * 8);
     this.recoilKick = Math.max(0, this.recoilKick - deltaSeconds * 2.8);
+    const bobStrength = moving && !aiming ? 1 : 0.18;
+    const bob = Math.sin(this.viewModelTime) * 0.012 * bobStrength;
     const targetX = aiming ? 0.08 : 0.34;
-    const targetY = aiming ? -0.22 : -0.31;
-    const targetZ = aiming ? -0.91 : -0.78;
+    const targetY = (aiming ? -0.22 : -0.31) + bob;
+    const targetZ = (aiming ? -0.91 : -0.78) + Math.cos(this.viewModelTime * 0.5) * 0.008 * bobStrength;
     const blend = 1 - Math.exp(-12 * deltaSeconds);
     this.viewModelRoot.position.x = THREE.MathUtils.lerp(this.viewModelRoot.position.x, targetX, blend);
     this.viewModelRoot.position.y = THREE.MathUtils.lerp(this.viewModelRoot.position.y, targetY, blend);
     this.viewModelRoot.position.z = THREE.MathUtils.lerp(this.viewModelRoot.position.z, targetZ + this.recoilKick * 0.16, blend);
     this.viewModelRoot.rotation.x = THREE.MathUtils.lerp(this.viewModelRoot.rotation.x, (aiming ? 0 : -0.05) + this.recoilKick * 0.22, blend);
+    this.viewModelRoot.rotation.z = THREE.MathUtils.lerp(this.viewModelRoot.rotation.z, Math.sin(this.viewModelTime * 0.5) * 0.006 * bobStrength, blend);
     if (this.reloadRemaining <= 0) {
       return;
     }
@@ -85,7 +101,9 @@ export class WeaponManager {
     this.fireCooldown = 0;
     this.muzzleFlashRemaining = 0;
     this.muzzleFlash.intensity = 0;
+    this.muzzleFlashMesh.visible = false;
     this.recoilKick = 0;
+    this.viewModelTime = 0;
     this.viewModelRoot.position.set(0.34, -0.31, -0.78);
     this.viewModelRoot.rotation.set(0, 0, 0);
     for (const definition of WEAPON_DEFINITIONS) {

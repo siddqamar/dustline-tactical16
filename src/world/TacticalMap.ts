@@ -272,8 +272,8 @@ export class TacticalMap {
     );
     sign.position.set(position.x, 5.3, position.z + 1.7);
     sign.rotation.x = -Math.PI / 2;
+    sign.name = `watchtower-sign-${label.toLowerCase().replaceAll(' ', '-')}`;
     this.root.add(sign);
-    void label;
   }
 
   private addRelayDish(position: THREE.Vector3): void {
@@ -291,8 +291,10 @@ export class TacticalMap {
 
   private addShippingContainer(position: THREE.Vector3, rotationY: number, color: number): void {
     const material = new THREE.MeshStandardMaterial({ color, roughness: 0.74, metalness: 0.52, map: createSurfaceTexture('metal', 2, 2) });
-    const container = this.addBox(position, new THREE.Vector3(3.2, 2.3, 9.2), { material });
+    const size = new THREE.Vector3(3.2, 2.3, 9.2);
+    const container = this.addBox(position, size, { material, collidable: false });
     container.rotation.y = rotationY;
+    this.colliders.push(this.createCollider(position, new THREE.Vector3(size.z, size.y, size.x)));
   }
 
   private addRockCluster(position: THREE.Vector3, count: number): void {

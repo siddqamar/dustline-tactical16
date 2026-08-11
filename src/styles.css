@@ -546,6 +546,53 @@ body {
   mask-image: linear-gradient(90deg, black, transparent 75%);
 }
 
+.prematch-recon {
+  position: absolute;
+  top: 12%;
+  right: 5%;
+  width: min(31rem, 42vw);
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid rgb(211 177 115 / 26%);
+  background:
+    linear-gradient(180deg, rgb(201 170 103 / 3%), rgb(8 10 8 / 40%)),
+    url('/assets/sable-relay-recon.png') center / cover;
+  box-shadow: 0 1.8rem 4rem rgb(0 0 0 / 35%);
+  opacity: 0.62;
+  transform: perspective(50rem) rotateY(-7deg) rotateX(3deg);
+}
+
+.prematch-recon::after {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgb(223 192 132 / 22%);
+  background: linear-gradient(90deg, transparent 49.8%, rgb(224 192 132 / 19%) 50%, transparent 50.2%), linear-gradient(0deg, transparent 49.8%, rgb(224 192 132 / 19%) 50%, transparent 50.2%);
+  content: '';
+}
+
+.prematch-recon span {
+  position: absolute;
+  top: 0.8rem;
+  left: 0.8rem;
+  z-index: 1;
+  color: #e0c48d;
+  font: 700 0.5rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: 0.18em;
+}
+
+.prematch-recon i {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  width: 0.55rem;
+  height: 0.55rem;
+  border: 1px solid #e0c48d;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0.45rem rgb(224 196 141 / 13%);
+  transform: translate(-50%, -50%);
+}
+
 .prematch-panel {
   position: relative;
   width: min(58rem, 100%);
@@ -853,6 +900,13 @@ body {
   .menu-grid,
   .role-picker {
     grid-template-columns: 1fr;
+  }
+
+  .prematch-recon {
+    top: 1rem;
+    right: 1rem;
+    width: 8rem;
+    opacity: 0.24;
   }
 
   .buy-grid {
