@@ -37,5 +37,8 @@ export class Health {
   public reset(): void {
     this.currentHealth = this.maxHealth;
   }
-}
 
+  public setCurrent(value: number): void {
+    this.currentHealth = Math.max(0, Math.min(this.maxHealth, Math.round(value)));
+  }
+}

@@ -1,5 +1,5 @@
 import type { CombatEvent } from '../combat/CombatSystem';
-import type { RoundSnapshot } from '../game/RoundManager';
+import type { MatchSnapshot } from '../match/MatchTypes';
 import type { WeaponDefinition } from '../weapons/WeaponTypes';
 
 export class AudioManager {
@@ -35,11 +35,11 @@ export class AudioManager {
     }
   }
 
-  public handleRound(snapshot: RoundSnapshot): void {
-    if (snapshot.phase === 'active') {
+  public handleMatch(snapshot: MatchSnapshot): void {
+    if (snapshot.phase === 'live') {
       this.playRoundStart();
     } else if (snapshot.phase === 'round-end') {
-      this.playRoundEnd(snapshot.winner === 'player');
+      this.playRoundEnd(snapshot.roundWinner === snapshot.playerSquad);
     }
   }
 
@@ -52,6 +52,15 @@ export class AudioManager {
     this.playNoise(0.055, 0.075, 850);
   }
 
+  public playObjectiveCue(success: boolean): void {
+    this.playTone(success ? 780 : 240, 0.12, 'square', 0.13);
+    this.playTone(success ? 1040 : 170, 0.2, 'sine', 0.12, 0.1);
+  }
+
+  public playBombTick(urgent: boolean): void {
+    this.playTone(urgent ? 1180 : 880, 0.055, 'sine', urgent ? 0.15 : 0.09);
+  }
+
   public dispose(): void {
     this.ambient?.stop();
     void this.context?.close();
@@ -60,8 +69,8 @@ export class AudioManager {
   }
 
   private playWeaponFire(weapon: WeaponDefinition): void {
-    const pitch = weapon.category === 'sniper' ? 92 : weapon.category === 'rifle' ? 128 : 174;
-    const duration = weapon.category === 'sniper' ? 0.22 : 0.13;
+    const pitch = weapon.category === 'knife' ? 210 : weapon.category === 'rifle' ? 128 : 174;
+    const duration = weapon.category === 'knife' ? 0.08 : 0.13;
     this.playTone(pitch, duration, 'sawtooth', 0.35);
     this.playNoise(duration, 0.28, 500);
   }
@@ -143,4 +152,3 @@ export class AudioManager {
     this.ambient.start();
   }
 }
-

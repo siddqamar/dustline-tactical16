@@ -73,8 +73,8 @@ export const BOT_DIFFICULTIES: Record<BotDifficulty, BotDifficultyProfile> = {
 };
 
 export function getBotDifficulty(value: string | null): BotDifficulty {
-  if (value === 'easy' || value === 'expert') {
+  if (value === 'medium' || value === 'expert') {
     return value;
   }
-  return 'medium';
+  return 'easy';
 }
