@@ -40,3 +40,13 @@
 3. The right look zone calls `PlayerController.applyTouchLook()`.
 4. Fire, aim, interaction, reload, and weapon buttons update the same Game and PlayerController state used by mouse and keyboard input.
 5. Touch mode treats active touch input as the player-ready signal, so mobile browsers do not depend on pointer lock.
+
+## Repository output flow
+
+1. `npm run dev` writes Vite cache data under `.vite/` and uses `node_modules/` for installed dependencies.
+2. `npm run build` writes deployable output to `dist/` and TypeScript may write `*.tsbuildinfo` metadata.
+3. `npm test` writes coverage only when coverage is requested, while Playwright writes `test-results/` and `playwright-report/`.
+4. Graphify writes its local knowledge graph and reports to `graphify-out/`.
+5. Image generation and visual QA use `tmp/` for intermediate chroma-key sources and screenshots.
+6. These paths are intentionally ignored by Git because they are reproducible machine output, local analysis state, or temporary files.
+7. Source code, tests, configuration, documentation, and referenced runtime assets under `public/assets/` remain pushable.

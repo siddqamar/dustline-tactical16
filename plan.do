@@ -83,3 +83,12 @@
 - [x] Perform desktop and phone visual checks of the live viewport.
 - [x] Update `decisions.md` and `flow.md` with the corrected execution flow.
 - [x] Commit input, combat continuity, and in-field visuals in focused stages.
+
+## Follow-up - push hygiene and reproducible outputs
+
+- [x] Audit tracked and untracked files against the build, test, analysis, and asset flows.
+- [x] Add dependencies, build output, compiler metadata, test reports, local analysis, scratch files, and editor noise to `.gitignore`.
+- [x] Exclude the unused legacy `dustline-tactical16.gif` without excluding runtime assets under `public/assets/`.
+- [x] Document ignored output paths in `flow.md`.
+- [x] Record the push-hygiene decision and tracking boundary in `decisions.md`.
+- [x] Verify ignored files and preserve source, tests, configuration, documentation, and runtime assets.

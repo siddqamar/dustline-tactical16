@@ -101,3 +101,10 @@
 - Decision: Redeploy a wiped Sable squad and respawn eliminated guards during the live field operation.
 - Reason: Immediate elimination resolution recreated a short competitive round instead of the sustained battlefield mission the user requested.
 - Constraint: Objective completion and the five-minute mission timer still resolve the operation, while a six-second opening fire delay gives the player time to orient.
+
+## 2026-08-12 - Keep reproducible output out of source control
+
+- Decision: Ignore dependencies, build output, compiler metadata, browser reports, Graphify state, image-generation scratch files, editor noise, local notes, and the unused legacy GIF.
+- Reason: These files are machine-specific or reproducible and would add noise, large binaries, or local state to a push.
+- Constraint: Keep `package-lock.json`, source files, tests, configuration, project documentation, and all runtime assets referenced by the game tracked.
+- Boundary: `public/assets/` is not globally ignored because the browser needs the committed game visuals; only the explicitly unused `dustline-tactical16.gif` is excluded.

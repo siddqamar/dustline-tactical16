@@ -1,14 +1,47 @@
+## Dependencies and package-manager output
 node_modules/
+.pnpm-store/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+## Build and compiler output
 dist/
 coverage/
 .vite/
-graphify-out/
+*.tsbuildinfo
+
+## Browser and test output
 playwright-report/
 test-results/
-*.local
-idea.md 
-todo.md
 
-# Local V2 implementation notes
+## Local analysis, scratch work, and generated intermediate assets
+graphify-out/
+tmp/
+*.local
+*.tmp
+*.temp
+*.bak
+
+## Local environment and secrets
+.env
+.env.*
+!.env.example
+
+## Editor and operating-system noise
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+## Local planning notes and legacy assets
+idea.md
+todo.md
 decison.md
 V2_FILE_CHANGES.md
+dustline-tactical16.gif
+
+# Local V2 implementation notes
