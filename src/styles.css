@@ -831,6 +831,8 @@ body {
 }
 
 .menu-primary {
+  position: relative;
+  z-index: 2;
   min-width: 12rem;
   padding: 0.95rem 1.25rem;
   border: 1px solid #b7c979;
