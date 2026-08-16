@@ -6,6 +6,12 @@ const PLAYER_RADIUS = 0.34;
 const MAX_PITCH = Math.PI * 0.49;
 const WALK_SPEED = 5.8;
 const SPRINT_SPEED = 8.2;
+const CROUCH_SPEED = 3.8;
+const CROUCH_EYE_HEIGHT = 1.02;
+const CROUCH_BODY_HEIGHT = 1.22;
+const STANDING_BODY_HEIGHT = 1.77;
+const GRAVITY = 24;
+const JUMP_VELOCITY = 7.4;
 const MOUSE_SENSITIVITY = 0.0019;
 const ACCELERATION = 20;
 const STEP_CLEARANCE = 0.32;
@@ -29,6 +35,10 @@ export class PlayerController {
   private enabled = true;
   private readonly spawnPosition = new THREE.Vector3();
   private spawnYaw: number;
+  private groundY: number;
+  private verticalVelocity = 0;
+  private grounded = true;
+  private jumpRequested = false;
 
   public constructor(
     private readonly camera: THREE.PerspectiveCamera,
@@ -38,6 +48,7 @@ export class PlayerController {
   ) {
     this.spawnPosition.copy(spawn.position);
     this.spawnYaw = spawn.yaw;
+    this.groundY = spawn.position.y;
     this.position.copy(spawn.position);
     this.yaw = spawn.yaw;
     this.camera.rotation.order = 'YXZ';
@@ -68,6 +79,10 @@ export class PlayerController {
     return this.aiming;
   }
 
+  public get isCrouching(): boolean {
+    return this.input.has('ControlLeft') || this.input.has('ControlRight');
+  }
+
   public setAiming(aiming: boolean): void {
     this.aiming = aiming;
   }
@@ -93,6 +108,9 @@ export class PlayerController {
     this.enabled = enabled;
     if (!enabled) {
       this.velocity.set(0, 0, 0);
+      this.verticalVelocity = 0;
+      this.grounded = true;
+      this.jumpRequested = false;
       this.aiming = false;
       this.touchMoveX = 0;
       this.touchMoveY = 0;
@@ -106,6 +124,10 @@ export class PlayerController {
     this.velocity.set(0, 0, 0);
     this.desiredVelocity.set(0, 0, 0);
     this.position.copy(this.spawnPosition);
+    this.groundY = this.spawnPosition.y;
+    this.verticalVelocity = 0;
+    this.grounded = true;
+    this.jumpRequested = false;
     this.yaw = this.spawnYaw;
     this.pitch = 0;
     this.aiming = false;
@@ -127,6 +149,10 @@ export class PlayerController {
     this.velocity.set(0, 0, 0);
     this.desiredVelocity.set(0, 0, 0);
     this.position.copy(position);
+    this.groundY = position.y;
+    this.verticalVelocity = 0;
+    this.grounded = true;
+    this.jumpRequested = false;
     this.yaw = yaw;
     this.pitch = 0;
     this.camera.position.copy(this.position);
@@ -156,7 +182,10 @@ export class PlayerController {
       this.velocity.z = 0;
     }
 
+    this.updateVertical(deltaSeconds);
+
     this.camera.position.copy(this.position);
+    this.camera.position.y -= this.isCrouching ? EYE_HEIGHT - CROUCH_EYE_HEIGHT : 0;
     this.camera.rotation.set(this.pitch, this.yaw, 0);
   }
 
@@ -170,14 +199,37 @@ export class PlayerController {
     }
 
     const sprinting = this.input.has('ShiftLeft') || this.input.has('ShiftRight');
-    const speed = this.aiming ? WALK_SPEED * 0.68 : sprinting ? SPRINT_SPEED : WALK_SPEED;
+    const speed = this.isCrouching ? CROUCH_SPEED : this.aiming ? WALK_SPEED * 0.68 : sprinting ? SPRINT_SPEED : WALK_SPEED;
     this.desiredVelocity.set(this.moveDirection.x * speed, 0, this.moveDirection.z * speed);
     this.desiredVelocity.applyAxisAngle(this.upAxis, this.yaw);
   }
 
+  private updateVertical(deltaSeconds: number): void {
+    if (this.grounded && this.jumpRequested) {
+      this.jumpRequested = false;
+      if (!this.isCrouching) {
+        this.verticalVelocity = JUMP_VELOCITY;
+        this.grounded = false;
+      }
+    }
+
+    if (this.grounded) {
+      return;
+    }
+
+    this.verticalVelocity -= GRAVITY * deltaSeconds;
+    this.position.y += this.verticalVelocity * deltaSeconds;
+    if (this.position.y <= this.groundY) {
+      this.position.y = this.groundY;
+      this.verticalVelocity = 0;
+      this.grounded = true;
+    }
+  }
+
   private collidesAt(x: number, z: number): boolean {
-    const bodyBottom = this.position.y - EYE_HEIGHT;
-    const bodyTop = this.position.y + 0.12;
+    const bodyHeight = this.isCrouching ? CROUCH_BODY_HEIGHT : STANDING_BODY_HEIGHT;
+    const bodyBottom = this.position.y - (this.isCrouching ? CROUCH_EYE_HEIGHT : EYE_HEIGHT);
+    const bodyTop = bodyBottom + bodyHeight;
 
     for (const collider of this.colliders) {
       if (collider.maxY <= bodyBottom + STEP_CLEARANCE || collider.minY >= bodyTop) {
@@ -202,6 +254,10 @@ export class PlayerController {
     }
 
     this.input.add(event.code);
+    if (event.code === 'Space') {
+      this.jumpRequested = true;
+      event.preventDefault();
+    }
   };
 
   private readonly handleKeyUp = (event: KeyboardEvent): void => {

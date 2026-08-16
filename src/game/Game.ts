@@ -187,7 +187,7 @@ export class Game {
         <span><strong>OPERATION SABLE</strong><small>RELAY STATION 14 // FIELD LINK</small></span>
       </div>
       <div class="game-status" data-game-status="setup"><span class="status-dot"></span><span class="status-label">OPERATION SETUP</span></div>
-      <div class="game-input-hint"><strong>FIELD CONTROL ACTIVE</strong><span>WASD TO MOVE // CLICK FIELD TO LOOK AND FIRE</span></div>
+      <div class="game-input-hint"><strong>FIELD CONTROL ACTIVE</strong><span>WASD MOVE // SPACE JUMP // CTRL CROUCH // CLICK TO LOOK AND FIRE</span></div>
       <div class="game-reticle" aria-hidden="true"><span></span><span></span><span></span><span></span><i></i></div>
       <div class="game-vignette" aria-hidden="true"></div>
     `;
