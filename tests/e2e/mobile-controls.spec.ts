@@ -7,7 +7,7 @@ test.use({
 });
 
 test('shows touch controls when the mobile operation opens', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('./');
   await page.locator('[data-start-operation]').click();
   await expect(page.locator('.mobile-controls')).toBeVisible();
   await expect(page.locator('[data-mobile-fire]')).toBeVisible();

@@ -563,7 +563,7 @@ body {
 .prematch-menu {
   background:
     linear-gradient(90deg, rgb(12 11 9 / 98%) 0%, rgb(12 11 9 / 86%) 42%, rgb(12 11 9 / 18%) 100%),
-    url('/assets/operation-sable-backdrop.png') center / cover no-repeat;
+    url('./assets/operation-sable-backdrop.png') center / cover no-repeat;
 }
 
 .prematch-backdrop {
@@ -587,7 +587,7 @@ body {
   border: 1px solid rgb(211 177 115 / 26%);
   background:
     linear-gradient(180deg, rgb(201 170 103 / 3%), rgb(8 10 8 / 40%)),
-    url('/assets/sable-relay-recon.png') center / cover;
+    url('./assets/sable-relay-recon.png') center / cover;
   box-shadow: 0 1.8rem 4rem rgb(0 0 0 / 35%);
   opacity: 0.62;
   transform: perspective(50rem) rotateY(-7deg) rotateX(3deg);

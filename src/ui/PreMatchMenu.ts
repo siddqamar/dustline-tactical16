@@ -1,3 +1,4 @@
+import operativeSableUrl from '../assets/operative-sable.png';
 import { BOT_DIFFICULTIES, type BotDifficulty } from '../ai/BotDifficulty';
 import { TEAM_SIZES, type MatchConfig, type TeamRole, type TeamSize } from '../match/MatchTypes';
 
@@ -21,7 +22,7 @@ export class PreMatchMenu {
         <i></i>
       </div>
       <div class="prematch-operative" aria-hidden="true">
-        <img src="/assets/operative-sable.png" alt="" />
+        <img src="${operativeSableUrl}" alt="" />
         <div class="operative-caption"><span>SABLE-1 // FIELD LEAD</span><small>RELAY STATION 14 // INSERTION READY</small></div>
       </div>
       <div class="prematch-panel">

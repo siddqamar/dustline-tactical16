@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import relayGuardUrl from '../assets/relay-guard-field.webp';
+import sableCommandoUrl from '../assets/sable-commando-field.webp';
 import { Navigation } from './Navigation';
 import { Health } from '../combat/DamageSystem';
 import type { CombatHitbox, CombatTarget, CombatSystem } from '../combat/CombatSystem';
@@ -19,7 +21,7 @@ function getBotTexture(squad: SquadId): THREE.Texture {
     return cached;
   }
 
-  const path = squad === 'alpha' ? '/assets/sable-commando-field.webp' : '/assets/relay-guard-field.webp';
+  const path = squad === 'alpha' ? sableCommandoUrl : relayGuardUrl;
   const texture = new THREE.TextureLoader().load(path);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = 4;

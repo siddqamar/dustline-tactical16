@@ -1,10 +1,13 @@
 import * as THREE from 'three';
+import knifeViewModelUrl from '../assets/knife-first-person.webp';
+import rifleViewModelUrl from '../assets/rifle-first-person.webp';
+import sidearmViewModelUrl from '../assets/sidearm-first-person.webp';
 import { WEAPON_DEFINITIONS, type WeaponAmmo, type WeaponDefinition, type WeaponShot } from './WeaponTypes';
 
 const VIEWMODEL_ASSETS: Record<string, string> = {
-  sidearm: '/assets/sidearm-first-person.webp',
-  rifle: '/assets/rifle-first-person.webp',
-  knife: '/assets/knife-first-person.webp',
+  sidearm: sidearmViewModelUrl,
+  rifle: rifleViewModelUrl,
+  knife: knifeViewModelUrl,
 };
 
 export class WeaponManager {
