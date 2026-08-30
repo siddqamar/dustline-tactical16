@@ -5,7 +5,7 @@ import { createServer } from 'vite';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const server = await createServer({
-  base: './',
+  base: '/dustline-tactical16/',
   configFile: false,
   logLevel: 'error',
   root: projectRoot,

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import desertGroundUrl from '../assets/sable-desert-ground.png';
 import type { BoxCollider, CoverPoint, MapSpawn, NavigationPoint, ObjectiveArea } from './WorldTypes';
 import { createSurfaceTexture } from './SurfaceTexture';
 
@@ -47,7 +48,7 @@ export class TacticalMap {
   }
 
   private buildGround(): void {
-    const groundTexture = new THREE.TextureLoader().load('/assets/sable-desert-ground.png');
+    const groundTexture = new THREE.TextureLoader().load(desertGroundUrl);
     groundTexture.colorSpace = THREE.SRGBColorSpace;
     groundTexture.wrapS = THREE.RepeatWrapping;
     groundTexture.wrapT = THREE.RepeatWrapping;

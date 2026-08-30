@@ -1,7 +1,19 @@
 import { expect, test } from '@playwright/test';
 
+const EXPECTED_GAME_ASSETS = [
+  'knife-first-person.webp',
+  'operation-sable-backdrop.png',
+  'operative-sable.png',
+  'relay-guard-field.webp',
+  'rifle-first-person.webp',
+  'sable-commando-field.webp',
+  'sable-desert-ground.png',
+  'sable-relay-recon.png',
+  'sidearm-first-person.webp',
+] as const;
+
 async function startOperation(page: import('@playwright/test').Page, teamSize = '3', difficulty = 'easy'): Promise<void> {
-  await page.goto(`/?difficulty=${difficulty}`);
+  await page.goto(`./?difficulty=${difficulty}`);
   await expect(page.locator('.prematch-menu')).toBeVisible();
   await page.locator('[data-team-size]').selectOption(teamSize);
   await page.locator('[data-start-operation]').click();
@@ -16,8 +28,33 @@ async function deploy(page: import('@playwright/test').Page): Promise<void> {
   await expect.poll(() => page.evaluate(() => document.pointerLockElement?.classList.contains('game-canvas') ?? false)).toBe(true);
 }
 
+test('loads every game image from the deployment subpath', async ({ page }) => {
+  const assetResponses = new Map<string, { pathname: string; status: number }>();
+  page.on('response', (response) => {
+    const pathname = new URL(response.url()).pathname;
+    const filename = EXPECTED_GAME_ASSETS.find((asset) => pathname.endsWith(asset));
+    if (filename) {
+      assetResponses.set(filename, { pathname, status: response.status() });
+    }
+  });
+
+  await page.goto('./');
+  await expect.poll(() => page.locator('.prematch-operative img').evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
+  await page.locator('[data-team-size]').selectOption('3');
+  await page.locator('[data-start-operation]').click();
+  await expect(page.locator('.hud-round-value')).toHaveText('LIVE COMBAT', { timeout: 8_000 });
+  await expect.poll(() => assetResponses.size).toBe(EXPECTED_GAME_ASSETS.length);
+
+  for (const filename of EXPECTED_GAME_ASSETS) {
+    const response = assetResponses.get(filename);
+    expect(response, `${filename} should be requested`).toBeDefined();
+    expect(response?.status, `${filename} should load successfully`).toBe(200);
+    expect(response?.pathname, `${filename} should use the deployment base path`).toMatch(/^\/dustline-tactical16\//);
+  }
+});
+
 test('waits in operation setup without starting hidden combat', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('./');
 
   await expect(page.locator('.prematch-menu')).toBeVisible();
   await expect(page.locator('[data-start-operation]')).toHaveText('BEGIN INSERTION');
@@ -28,7 +65,7 @@ test('waits in operation setup without starting hidden combat', async ({ page })
 });
 
 test('starts a staffed field operation with the selected squad size', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('./');
   await page.locator('[data-team-size]').selectOption('4');
   await page.locator('[data-role="defenders"]').click();
   await page.locator('[data-start-operation]').click();

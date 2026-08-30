@@ -9,7 +9,7 @@ export default defineConfig({
   reporter: 'line',
   use: {
     ...devices['Desktop Chrome'],
-    baseURL: 'http://127.0.0.1:4174',
+    baseURL: 'http://127.0.0.1:4174/dustline-tactical16/',
     channel: 'chrome',
     headless: true,
     viewport: { width: 960, height: 540 },
